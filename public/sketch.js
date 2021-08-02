@@ -33,6 +33,9 @@ function Player(name)
     // Check to see if it's the player's turn. When instantiating player objects, use random to make one of the player's "isTurn" variable true.
     let isTurn = false;
 
+    //if it is their turn, call the drawingShape();
+    // Don't allow the other player to draw shapes when not their turn
+
     // Check to see if the player is an AI
     let isAI = false;
 
@@ -106,6 +109,7 @@ function draw()
     drawBoard();
     drawingUserShape();
     // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
+    //checkWinner(currentBoard, coin)
 }
 
 /* TO-DO:
@@ -121,16 +125,103 @@ function draw()
  */
 function mouseDragged()
 {
+    if (player1.isTurn)
+    {
+        path.push({x: mouseX, y: mouseY});
+    }
+    else
+    {
 
+    }
 }
 
 /* Use code in example.js:245-259 to detect a user's shape drawing. We'll use the result for a comparison in mouseDragged().
    @return - a string that says which shape was recognized by the AI or says that no shape was found (Maybe make the string equal to error [up to you]).
  */
-function analyzeShape()
-{
 
+//dont need analyzeShape, automatically analyze shape when mouse released
+
+function drawingUserShape()
+{
+    // Looping through path (which stores the coordinate while the user is drawing) and draws the coordinates
+    for (let userCoords of path) {
+        mouseDraw(userCoords["x"], userCoords["y"])
+    }
 }
+
+// When mouse clicked on a certain square, sets array to that square
+// function mouseClicked()
+    //{
+    // if (0 <= mouseY && mouseY <= h/3) { // where does the variable w and h come from - austin
+    //     if (0 <= mouseX && mouseX <= w/3)
+    //     {
+    //         // This arraw allows provided access to what square the user is currently drawing in. We use this when recognizing the shape
+    //         current_drawing_in = 0; what is this 2-d array for? Which function is using the array? and since we are doing a 1-d array shoulding it just be [0] [1] [2] [3] [4] [5] [6] [7] [8]- austin
+    //     }
+    //     else if (w/3 < mouseX && mouseX <= 2*(w/3))
+    //     {
+    //         current_drawing_in = 1;
+    //     }
+    //     else if (2*(w/3) < mouseX && mouseX <= 3*(w/3))
+    //     {
+    //         current_drawing_in = 2;
+    //     }
+    // }
+    // if (h/3 <= mouseY && mouseY <= 2*(h/3)) {
+    //     if (0 <= mouseX && mouseX <= w/3)
+    //     {
+    //         current_drawing_in = 3;
+    //     }
+    //     else if (w/3 < mouseX && mouseX <= 2*(w/3))
+    //     {
+    //         current_drawing_in = 4;
+    //     }
+    //     else if (2*(w/3) < mouseX && mouseX <= 3*(w/3))
+    //     {
+    //         current_drawing_in = 5;
+    //     }
+    // }
+    // if (2*(h/3) <= mouseY && mouseY <= 3*(h/3)) {
+    //     if (0 <= mouseX && mouseX <= w/3)
+    //     {
+    //         current_drawing_in = 6;
+    //     }
+    //     else if (w/3 < mouseX && mouseX <= 2*(w/3))
+    //     {
+    //         current_drawing_in = 7;
+    //     }
+    //     else if (2*(w/3) < mouseX && mouseX <= 3*(w/3))
+    //     {
+            current_drawing_in = 8;
+    //    }
+    //}
+//}
+
+
+    // when mouse released after shape drawn, analyzes shape
+    //function mouseReleased()
+    //{
+    // var resultLine = analyzer.analyzeLine(path);
+    // var resultCircle = analyzer.analyzeCircle(path);
+    //     - tolerance is optional argument. Higher values lower accuracy - default 0.5
+    //  if (resultLine['accuracy'] > 0.7)
+    //  {
+    //     console.log('Line Detected');
+    //     shapes['line'].push({square: current_drawing_in, shape: path});
+    //     path = [];
+    //  }
+    //  else if (resultCircle['accuracy'] > 0.7)
+    //  {
+    //     console.log('Circle detected');
+    //     shapes[‘circle’].push({square: current_drawing_in, shape: path});
+    //     path = [];
+    //  }
+    //  else
+    //  {
+    //     console.log('Nothing Detected');
+    //     path = [];
+    //  }
+    //}
 
 /* TO DO:
       - Use the win conditions and check each player's array for a win, tie, or game continuation
