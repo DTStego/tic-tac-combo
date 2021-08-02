@@ -230,10 +230,11 @@ function drawingUserShape()
         If either of the above conditions are true, make sure to make gameOver = true.
       - Else, continue the game by doing nothing.
  */
-function checkGameCondition()
+function checkWinner()
 {
 
 }
+
 
 function sendInfo(data, identifier)
 {
