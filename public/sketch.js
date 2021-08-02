@@ -3,7 +3,7 @@ let socket;
 
 function setup()
 {
-  canvas.createCanvas(800, 600);
+  createCanvas(800, 600);
   background(0);
 
   // Change to heroku url after implementation
@@ -14,7 +14,7 @@ function setup()
       {
         // Draw a blue circle for received data
         fill(0, 0, 255);
-        draw.noStroke();
+        noStroke();
         ellipse(data.x, data.y, 20, 20);
       }
   );
@@ -34,7 +34,7 @@ function mouseDragged()
 {
   // Draw some white circles
   fill(255);
-  draw.noStroke();
+  noStroke();
   ellipse(mouseX, mouseY,20,20);
 
   // Send the mouse coordinates
