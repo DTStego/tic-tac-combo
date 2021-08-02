@@ -1,0 +1,15 @@
+{
+  "name": "tic-tac-combo",
+  "version": "1.0.0",
+  "description": "tic-tac-toe game with node.js, ai shape recognition, sound, gravity, etc.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jimmy Nguyen, Bhavagyna Vegunta, Manvir Hansra, Austin Wong",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4",
+    "socket.io": "^2.4.0"
+  }
+}
