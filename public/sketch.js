@@ -1,3 +1,13 @@
+const analyzer = require('drawn-shape-recognizer');
+
+let widthCanvas, heightCanvas, midX, midY, player1, player2;
+// Stores positions for recognized shapes. No need to store all the points, as this only shows that the shapes the user drew is recognized as.
+let shapes = {circle: [], line: []};
+let path = [];  // Stores the coordinates while the user is drawing.
+// Stores the square the user is currently drawing in.
+let current_drawing_in = null;
+let mouseDraw = () => ellipse(mouseX, mouseY, 5, 5);
+
 // Keep track of our socket connection. gameOver variable for convenience, gameMode for which scene the user is on.
 let socket, gameOver;
 let gameMode = scenes.TITLE;
@@ -43,7 +53,8 @@ function Player(name)
             [2, 5, 8],
             [0, 4, 8],
             [2, 4, 6]
-        ]
+        ];
+
 
     // Name variable to recognize player and display name.
     this.name = name;
@@ -69,7 +80,13 @@ function Player(name)
 function setup()
 {
     // Make this variable based on screen size while centering tic-tac-toe game.
-    createCanvas(800, 600);
+    widthCanvas = 800
+    heightCanvas = 600
+    midX = widthCanvas / 2;
+    midY = heightCanvas / 2;
+    // the reason why it is divided by three is so that the middle square is in the middle as the board is a odd number
+    createCanvas(widthCanvas, heightCanvas);
+    color.colorMode(color.HSB,360, 100, 100);
     background(0);
 
     // Change to heroku url after implementation
@@ -85,6 +102,9 @@ function setup()
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
 function draw()
 {
+    background(0, 0, 95);
+    drawBoard();
+    drawingUserShape();
     // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
 }
 
@@ -124,12 +144,12 @@ function checkGameCondition()
 
 }
 
-/* Function for sending data to other computers.
+function sendInfo(data, identifier)
+{
+    /* Function for sending data to other computers.
    @Params - data: Object containing all the data you want to send
            - identifier: used to determine what data you sent
  */
-function sendInfo(data, identifier)
-{
   // Send that object to the socket with unique identifier.
   socket.emit(identifier, data);
 }
