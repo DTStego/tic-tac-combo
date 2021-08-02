@@ -13,6 +13,9 @@ const scenes =
         SETTINGS: 'settings'
     }
 
+/*
+
+ */
 function title()
 {
 
@@ -24,6 +27,25 @@ function title()
 function waitingRoom()
 {
 
+        // player1 = random(0,1);
+        // if (player1 === 1)
+        // {
+        //     player1.isTurn === true;
+        //     player2 = 0;
+        // }
+        // else
+        // {
+        //     player2 = 1;
+        //     player2.isTurn === true;
+        // }
+        // if (player1.isTurn === true)
+        // {
+        //     player1.drawingShape();
+        // }
+        // else
+        // {
+        //     player2.drawingShape();
+        // }
 }
 
 function singlePlayer()

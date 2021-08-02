@@ -16,7 +16,7 @@ let gameMode = scenes.TITLE;
             |     |
  */
 
-let board = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+let currentBoard = [null, null, null, null, null, null, null, null];
 
 function Player(name)
 {
@@ -49,10 +49,20 @@ function Player(name)
     this.name = name;
 
     // Using the index, removes all occurrences of that value from winConditions.
-    let updateCondition = function(index)
+    let updateCondition = (index) =>
     {
         // Removes the index from the player's winConditions
         winConditions = winConditions.filter(e => e !== index);
+    }
+
+    // @returns true if the player has won the game
+    let checkForWin = () =>
+    {
+        for (let i = 0; i < winConditions.length; i++)
+        {
+            if (winConditions[i].length === 0)
+                return true;
+        }
     }
 }
 
