@@ -240,7 +240,7 @@ let shapes = {circle: [], line: []};
 let path = [];
 path.push({x: mouseX, y: mouseY})
 
-When we want to  detect shape (write code to detect where majority of shape is & substitute the square ([0, 0 ])-> what square they draw in):
+When we want to detect shape (write code to detect where majority of shape is & substitute the square ([0, 0 ])-> what square they draw in):
 
 var resultLine = analyzer.analyzeLine(path);
 var resultCircle = analyzer.analyzeCircle(path, tolerance)
