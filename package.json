@@ -13,6 +13,7 @@
     "socket.io": "^2.4.0"
   },
   "devDependencies": {
-    "drawn-shape-recognizer": "^1.1.1"
+    "drawn-shape-recognizer": "^1.1.1",
+    "socket.io-client": "^2.4.0"
   }
 }

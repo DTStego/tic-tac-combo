@@ -5,7 +5,9 @@ let app = express();
 // process.env.PORT is related to deploying on heroku
 let server = app.listen(process.env.PORT || 3000, listen);
 
-analyzer = require('drawn-shape-recognizer');
+// Some leads here. If you try to do this in sketch.js, it says it's not loaded and gives a weird error.
+// We need to somehow transport this variable to the client using socket.io.
+analyzerObject = require('drawn-shape-recognizer');
 
 // Method tells us when server has started
 function listen()

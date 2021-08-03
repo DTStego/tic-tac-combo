@@ -1,5 +1,3 @@
-let widthCanvas, heightCanvas, midX, midY;
-
 // Stores positions for recognized shapes. No need to store all the points, as this only shows that the shapes the user drew is recognized as.
 let shapes = {circle: [], line: []};
 
@@ -11,7 +9,7 @@ let current_drawing_in = null;
 let mouseDraw = () => ellipse(mouseX, mouseY, 5, 5);
 
 // Keep track of our socket connection. gameOver variable for convenience, gameMode for which scene the user is on.
-let socket, gameOver;
+let socket, gameOver, widthCanvas, heightCanvas, midX, midY, boardSquares, analyzer;
 let gameMode = scenes.TITLE;
 
 // Reminder to keep with current conventions, i.e., please use brackets on the next line instead of the same line (Because it's cooler).
@@ -27,8 +25,6 @@ let gameMode = scenes.TITLE;
          6  |  7  |  8
             |     |
 */
-
-let boardSquares = ["null", "null", "null","null", "null", "null","null", "null", "null" ];
 
 function Player(identifier)
 {
@@ -86,6 +82,8 @@ function Player(identifier)
 
 function setup()
 {
+    boardSquares = ["null", "null", "null", "null", "null", "null","null", "null", "null"];
+
     // Make this variable based on screen size while centering tic-tac-toe game.
     widthCanvas = 800
     heightCanvas = 600
@@ -139,13 +137,6 @@ function mouseDragged()
 
     } */
 }
-
-/* Use code in example.js:245-259 to detect a user's shape drawing. We'll use the result for a comparison in mouseDragged().
-   @return - a string that says which shape was recognized by the AI or says that no shape was found (Maybe make the string equal to error [up to you]).
- */
-
-//dont need analyzeShape, automatically analyze shape when mouse released
-
 function drawingUserShape()
 {
     // Looping through path (which stores the coordinate while the user is drawing) and draws the coordinates
