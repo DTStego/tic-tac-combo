@@ -12,9 +12,24 @@ const scenes =
         SETTINGS: 'settings'
     }
 
+
 /* Background picture with some music.
-   Buttons that will take you to the other scenes.
+   Buttons that will take you to the other scenes. Button code below 
  */
+
+// // 1. Create the button
+// var button = document.createElement("button");
+// button.innerHTML = "Do Something";
+
+// // 2. Append somewhere
+// var body = document.getElementsByTagName("body")[0];
+// body.appendChild(button);
+
+// // 3. Add event handler
+// button.addEventListener ("click", function() {
+//   alert("did something");
+// });
+
 function title()
 {
 
@@ -36,7 +51,8 @@ function waitingRoom()
  */
 function game()
 {
-
+  //drawBoard();
+  //goBackPrompt();
 }
 
 /* OPTIONAL
@@ -50,19 +66,19 @@ function settings()
 
 function drawBoard()
 {
-        // draws the board
-        // stroke('black');
-        // strokeWeight(4);
-        //
-        // const c = 75
-        //
-        // //vertical lines
-        // line(midX-c,midY-3*c, midX-c,midY+3*c);
-        // line(midX+c,midY-3*c, midX+c,midY+3*c);
-        //
-        // // horizontal lines
-        // line(midX-3*c,midY-c,midX+3*c,midY-c);
-        // line(midX-3*c,midY+c,midX+3*c,midY+c);
+    //draws the board
+    stroke('black');
+    strokeWeight(4);
+
+    const c = 132;
+        
+    //vertical lines
+    line(midX - c, midY - 3 * c, midX - c, midY + 3 * c);
+    line(midX + c, midY - 3 * c, midX + c, midY + 3 * c);
+        
+    // horizontal lines
+    line(midX - 3 * c, midY - c, midX + 3 * c, midY - c);
+    line(midX - 3 * c, midY + c, midX + 3 * c, midY + c);
 }
 
 /* When the user wants to go back to the main menu during a game, prompt them for confirmation
