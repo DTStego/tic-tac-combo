@@ -82,12 +82,11 @@ function Player(identifier)
 
 function setup()
 {
-    console.log("blesh")
-    boardSquares = ["null", "null", "null", "null", "null", "null","null", "null", "null"];
+    boardSquares = [null, null, null, null, null, null, null, null, null];
 
     // Make this variable based on screen size while centering tic-tac-toe game.
-    widthCanvas = 800
-    heightCanvas = 600
+    widthCanvas = 800;
+    heightCanvas = 800;
     midX = widthCanvas / 2;
     midY = heightCanvas / 2;
     // the reason why it is divided by three is so that the middle square is in the middle as the board is a odd number
@@ -112,6 +111,7 @@ function draw()
 {
     background(0, 0, 95);
     drawingUserShape();
+    drawingFinalShapes();
     // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
     //checkWinner()
 }
@@ -130,14 +130,14 @@ function draw()
 function mouseDragged()
 {
     path.push({x: mouseX, y: mouseY});
-    if (player1.isTurn)
+    /* if (player1.isTurn)
     {
         // path.push({x: mouseX, y: mouseY});
     }
     else
     {
 
-    }
+    } */
 }
 function drawingUserShape()
 {
@@ -147,52 +147,86 @@ function drawingUserShape()
     }
 }
 
-// When mouse clicked on a certain square, sets array to that square
-function mouseClicked()
+function drawingFinalShapes()
 {
-    //if functions to determine which square the mouse clicks in
-    //once square identified, current_drawing_in variable set to square index
-    //3 if conditions for 3 columns, 3 rows in each if loop
+    for (let circle of shapes["circle"])
+    {
+        ellipse(
+            ((widthCanvas / 3) / 2) + ((widthCanvas / 3) * (circle % 3)),  // x coordinate of center
+            ((heightCanvas / 3) / 2) + ((heightCanvas / 3) * Math.floor(circle / 3)),  // y coordinate of center
+            widthCanvas / 3 - 10, heightCanvas / 3 - 10
+        )
+        
+    }
+    for (let line_coords of shapes["line"])
+    {
+        let left_corner = [
+            ((widthCanvas / 3) * (line_coords % 3)),
+            ((heightCanvas / 3) * Math.floor(line_coords / 3))
+        ]
+        let right_corner = [
+            (widthCanvas / 3) + ((widthCanvas / 3) * (line_coords % 3)),
+            (heightCanvas / 3) * Math.floor(line_coords / 3)
+        ]
+        let br_c = [
+            (widthCanvas / 3) + ((widthCanvas / 3) * (line_coords % 3)),
+            (heightCanvas / 3) + ((heightCanvas / 3) * Math.floor(line_coords / 3))
+        ]
+        let bl_c = [
+            ((widthCanvas / 3) * (line_coords % 3)),
+            (heightCanvas / 3) + ((heightCanvas / 3) * Math.floor(line_coords / 3))
+        ]
+        line(left_corner[0], left_corner[1], br_c[0], br_c[1])
+        line(right_corner[0], right_corner[1], bl_c[0], bl_c[1])
+    }
+}
+
+// When mouse clicked on a certain square, sets array to that square
+function mousePressed()
+{
+    // if functions to determine which square the mouse clicks in
+    // once square identified, current_drawing_in variable set to square index
+    // 3 if conditions for 3 columns, 3 rows in each if loop
     if (0 <= mouseY && mouseY <= heightCanvas/3) {
         if (0 <= mouseX && mouseX <= widthCanvas/3)
         {
-            current_drawing_in = boardSquares[0];
+            current_drawing_in = 0;
         }
         else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
         {
-            current_drawing_in = boardSquares[1];
+            current_drawing_in = 1;
         }
         else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
         {
-            current_drawing_in = boardSquares[2];
+            current_drawing_in = 2;
         }
     }
-    if (heightCanvas/3 <= mouseY && mouseY <= 2*(heightCanvas/3)) {
+    else if (heightCanvas/3 <= mouseY && mouseY <= 2*(heightCanvas/3)) {
         if (0 <= mouseX && mouseX <= widthCanvas/3)
         {
-            current_drawing_in = boardSquares[3];
+            current_drawing_in = 3;
         }
         else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
         {
-            current_drawing_in = boardSquares[4];
+            current_drawing_in = 4;
         }
         else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
         {
-            current_drawing_in = boardSquares[5];
+            current_drawing_in = 5;
         }
     }
-    if (2*(heightCanvas/3) <= mouseY && mouseY <= 3*(heightCanvas/3)) {
-        if (0 <= mouseX && mouseX <= w/3)
+    else if (2*(heightCanvas/3) <= mouseY && mouseY <= 3*(heightCanvas/3)) {
+        if (0 <= mouseX && mouseX <= widthCanvas/3)
         {
-            current_drawing_in = boardSquares[6];
+            current_drawing_in = 6;
         }
         else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
         {
-            current_drawing_in = boardSquares[7];
+            current_drawing_in = 7;
         }
         else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
         {
-           current_drawing_in = boardSquares[8];
+            current_drawing_in = 8;
        }
     }
 }
@@ -210,14 +244,30 @@ function mouseReleased()
     if (resultLine['accuracy'] > 0.7)
     {
         console.log('Line Detected');
-        shapes['line'].push({square: current_drawing_in, shape: path});
+        console.log(current_drawing_in)
+        if (!(current_drawing_in in shapes['line'].concat(shapes['circle'])))
+        {
+            shapes['line'].push(current_drawing_in);
+        }
+        else
+        {
+            console.log("Square taken")
+        }
         path = [];
     }
     //adds points to permanent shape circle array if circle detected
-    else if (resultCircle['accuracy'] > 0.7)
+    else if (resultCircle['accuracy'] > 0.5)
     {
         console.log('Circle detected');
-        shapes[`circle`].push({square: current_drawing_in, shape: path});
+        console.log(current_drawing_in)
+        if (!(current_drawing_in in shapes['line'].concat(shapes['circle'])))
+        {
+            shapes['circle'].push(current_drawing_in);
+        }
+        else
+        {
+            console.log("Square taken")
+        }
         path = [];
     }
     //returns nothing detected if not clear enough

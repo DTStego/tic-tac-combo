@@ -66,19 +66,19 @@ function settings()
 
 function drawBoard()
 {
-        // //draws the board
-        // stroke('black');
-        // strokeWeight(4);
+    //draws the board
+    stroke('black');
+    strokeWeight(4);
         
-        // const c = 75
+    const c = 75
         
-        // //vertical lines
-        // line(midX-c,midY-3*c, midX-c,midY+3*c);
-        // line(midX+c,midY-3*c, midX+c,midY+3*c);
+    //vertical lines
+    line(midX-c,midY-3*c, midX-c,midY+3*c);
+    line(midX+c,midY-3*c, midX+c,midY+3*c);
         
-        // // horizontal lines
-        // line(midX-3*c,midY-c,midX+3*c,midY-c);
-        // line(midX-3*c,midY+c,midX+3*c,midY+c);
+    // horizontal lines
+    line(midX - 3 * c, midY - c, midX + 3 * c, midY - c);
+    line(midX - 3 * c, midY + c, midX + 3 * c, midY + c);
 }
 
 /* When the user wants to go back to the main menu during a game, prompt them for confirmation

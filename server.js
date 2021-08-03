@@ -3,13 +3,9 @@ let express = require('express');
 let app = express();
 
 // process.env.PORT is related to deploying on heroku
-let server = app.listen(process.env.PORT || 3000, listen);
-
-// Method tells us when server has started
-function listen()
-{
-  console.log('Server has started');
-}
+let server = app.listen(process.env.PORT || 3000, () => {
+  console.log("Server has started")
+});
 
 // Shows only files in the "public" folder to users
 app.use(express.static('public'));
