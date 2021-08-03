@@ -104,9 +104,10 @@ function drawBoard()
     stroke('black');
     strokeWeight(4);
 
-    const c = 132;
-        
-    //vertical lines
+    //let c = Math.round((widthCanvas + heightCanvas) / (2*9));
+    let c = 132;
+
+    //vertical lines;
     line(midX - c, midY - 3 * c, midX - c, midY + 3 * c);
     line(midX + c, midY - 3 * c, midX + c, midY + 3 * c);
         
@@ -120,5 +121,5 @@ function drawBoard()
  */
 function goBackPrompt()
 {
-
+// goes back to title or something
 }
