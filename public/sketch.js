@@ -1,3 +1,8 @@
+//variable that assigns which player won
+//have to make it so that player 1 can only draw circles
+//have to make it so that player 2 can only draw lines
+let playerThatWon;
+
 // Stores positions for recognized shapes. No need to store all the points, as this only shows that the shapes the user drew is recognized as.
 let shapes = {circle: [], line: []};
 
@@ -9,8 +14,21 @@ let current_drawing_in = null;
 let mouseDraw = () => ellipse(mouseX, mouseY, 5, 5);
 
 // Keep track of our socket connection. gameOver variable for convenience, gameMode for which scene the user is on.
-let socket, gameOver, widthCanvas, heightCanvas, midX, midY, boardSquares, analyzer;
+let socket,  widthCanvas, heightCanvas, midX, midY, boardSquares, analyzer;
+let current_player_id = null;
 let gameMode = scenes.TITLE;
+
+let winConditions =
+[
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+];
 
 // Reminder to keep with current conventions, i.e., please use brackets on the next line instead of the same line (Because it's cooler).
 /* Tic-tac-toe array positions
@@ -43,19 +61,7 @@ function Player(identifier)
     // Used to check if the player is the winner of the game
     let hasWon = false;
 
-    // When any element in winConditions is empty, that means the player has won! Use updateCondition() to remove elements.
-    let winConditions =
-        [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
-            [0, 4, 8],
-            [2, 4, 6]
-        ];
-
+    // When any element in winConditions is empty, that means the player has won! Use updateCondition() to remove elements
 
     // Name variable to recognize player and display name.
     this.identifier = identifier;
@@ -99,15 +105,15 @@ function setup()
 
     console.log("In Client = " + socket.id);
 
-    // When we receive input with "mouse" identifier, do anonymous function.
-    // socket.on('mouse', (data) =>
-    //     {
-
-    //     });
-    socket.on('shape_draw', (data) => 
+    // When we receive an event with some identifier, the function we provide will be called.
+    socket.on('shape_draw', (data) =>
     {
         shapes = data["shapes"];
-    })
+    });
+
+    socket.on('player_turn', (data) => {
+        current_player_id = data["player_id"];
+    });
 }
 
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
@@ -117,6 +123,7 @@ function draw()
     drawBoard();
     drawingUserShape();
     drawingFinalShapes();
+    checkWinner();
     // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
     //checkWinner()
 }
@@ -248,11 +255,17 @@ function mouseReleased()
     //adds points to permanent shape line array if line detected
     if (resultLine['accuracy'] > 0.7)
     {
-        console.log('Line Detected');
-        console.log(current_drawing_in)
-        if (!(current_drawing_in in shapes['line'].concat(shapes['circle'])))
+        console.log(`Line Detected. Currently Drawing In: ${current_drawing_in}`);
+        if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in)))
         {
-            shapes['line'].push(current_drawing_in);
+            if (current_player_id !== socket.id)
+            {
+                console.log("Not Your Turn")
+            }
+            else
+            {
+                shapes['line'].push(current_drawing_in);
+            }
         }
         else
         {
@@ -263,11 +276,17 @@ function mouseReleased()
     //adds points to permanent shape circle array if circle detected
     else if (resultCircle['accuracy'] > 0.5)
     {
-        console.log('Circle detected');
-        console.log(current_drawing_in)
-        if (!(current_drawing_in in shapes['line'].concat(shapes['circle'])))
+        console.log(`Circle detected Currently Drawing In: ${current_drawing_in}`);
+        if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in)))
         {
-            shapes['circle'].push(current_drawing_in);
+            if (current_player_id !== socket.id)
+            {
+                console.log("Not Your Turn")
+            }
+            else
+            {
+                shapes['circle'].push(current_drawing_in);
+            }
         }
         else
         {
@@ -310,6 +329,26 @@ function checkWinner()
         console.log('tie');
         gameOver = true;
     } */
+    for (let winCondition of winConditions)
+    {
+        if (winCondition.every(element => shapes['circle'].includes(element)))
+        {
+            console.log(`circle has won with ${winCondition}`)
+            //playerThatWon = player1;
+            gameOver();
+        } else if (winCondition.every(element => shapes['line'].includes(element)))
+        {
+            console.log(`line has won with ${winCondition}`)
+            //playerThatWon = player2;
+            gameOver();
+        }
+    }
+}
+
+function gameOver(){
+    background('black');
+    fill('white');
+    text( `GAME OVER! ${playerThatWon} has won.`, widthCanvas/2 -30, heightCanvas/2);
 }
 
 function sendInfo(data, identifier)

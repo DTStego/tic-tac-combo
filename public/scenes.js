@@ -41,7 +41,42 @@ function title()
  */
 function waitingRoom()
 {
+        this.setup = function() {
+            createCanvas(widthCanvas, heightCanvas);
 
+
+        }
+
+        this.draw = function()
+        {
+            background(100, 100, 100)
+            textAlign(CENTER);
+            textSize(20)
+            text("L O A D I N G",midX,midY )
+            for(let i = 0 ; i <= 30000 ; i++){
+                console.log(i)
+                if (i == 10000 ){
+                    fill(0)
+                    noStroke()
+                    ellipse(widthCanvas/4, heightCanvas2/3,20);
+                }
+                if (i == 20000 ){
+                    fill(0)
+                    noStroke()
+                    ellipse(widthCanvas/2, heightCanvas2/3,20);
+                }
+                if (i == 30000 ){
+                    fill(0)
+                    noStroke()
+                    ellipse(widthCanvas3/4, heightCanvas2/3,20);
+                }
+            }
+        }
+
+        this.keyPressed = function() {
+            // switch the scene
+            this.sceneManager.showScene( game );
+        }
 }
 
 /* Draw the board and have a back button (Use goBackPrompt() if they click on the back button)

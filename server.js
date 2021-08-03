@@ -4,7 +4,7 @@ let app = express();
 
 // process.env.PORT is related to deploying on heroku
 let server = app.listen(process.env.PORT || 3000, () => {
-  console.log("Server has started")
+    console.log("Server has started")
 });
 
 // Shows only files in the "public" folder to users
@@ -14,10 +14,22 @@ app.use(express.static('public'));
 // WebSockets work with the HTTP server
 let io = require('socket.io')(server);
 
+let players = [];
+
 // This is run for each individual user that connects
 io.sockets.on('connection', (socket) =>
     {
-        console.log("New Client " + socket.id);
+        players.push(socket.id);
+        console.log(`New Client ${socket.id}`);
+
+        if (players.length === 2)
+        {
+            io.sockets.emit('player_turn', {'player_id': players[0]});
+        }
+        else if (players.length > 2)
+        {
+            console.log("To many players!! Alert!");
+        }
 
         // When this user emits, client side: socket.emit('event',some data);
         // socket.on('mouse', (data) =>
@@ -29,7 +41,7 @@ io.sockets.on('connection', (socket) =>
         //     // io.sockets.emit('message', "this goes to everyone");
         // });
 
-        socket.on('shape_draw', (data) => 
+        socket.on('shape_draw', (data) =>
         {
             let next_player;
             if (players.indexOf(socket.id) + 1 < players.length) {
@@ -48,3 +60,4 @@ io.sockets.on('connection', (socket) =>
         });
     }
 );
+
