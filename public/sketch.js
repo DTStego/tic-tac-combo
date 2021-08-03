@@ -1,6 +1,7 @@
 const analyzer = require('drawn-shape-recognizer');
 
-let widthCanvas, heightCanvas, midX, midY, player1, player2;
+let widthCanvas, heightCanvas, midX, midY;
+
 // Stores positions for recognized shapes. No need to store all the points, as this only shows that the shapes the user drew is recognized as.
 let shapes = {circle: [], line: []};
 let path = [];  // Stores the coordinates while the user is drawing.
@@ -24,7 +25,10 @@ let gameMode = scenes.TITLE;
             |     |
          6  |  7  |  8
             |     |
- */
+*/
+
+// Import player1 and player2 objects after they have been instantiated in the scenes file
+import { player1, player2 } from './scenes';
 
 // Decrement by 1 every turn. Used to check whether all the spaces are filled.
 let currentBoard = 9;
@@ -80,6 +84,9 @@ function Player(name)
         }
     }
 }
+
+// Export the player object to use in scenes.js for implementation
+export { Player };
 
 function setup()
 {
@@ -253,10 +260,9 @@ function checkWinner()
     }
 }
 
-
 function sendInfo(data, identifier)
 {
-    /* Function for sending data to other computers.
+/* Function for sending data to other computers.
    @Params - data: Object containing all the data you want to send
            - identifier: used to determine what data you sent
  */

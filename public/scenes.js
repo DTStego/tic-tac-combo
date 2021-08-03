@@ -4,6 +4,10 @@
    It's incredibly important that when designing shapes and designs, you should use a variable so we can change it in color schemes functions.
  */
 
+// Create and export player1 and player2 objects
+let player1, player2;
+export { player1, player2 };
+
 const scenes =
     {
         TITLE: 'title',
@@ -13,8 +17,8 @@ const scenes =
         SETTINGS: 'settings'
     }
 
-/*
-
+/* Background picture with some music.
+   Buttons that will take you to the other scenes.
  */
 function title()
 {
@@ -26,26 +30,25 @@ function title()
  */
 function waitingRoom()
 {
-
-        // player1 = random(0,1);
-        // if (player1 === 1)
-        // {
-        //     player1.isTurn === true;
-        //     player2 = 0;
-        // }
-        // else
-        // {
-        //     player2 = 1;
-        //     player2.isTurn === true;
-        // }
-        // if (player1.isTurn === true)
-        // {
-        //     player1.drawingShape();
-        // }
-        // else
-        // {
-        //     player2.drawingShape();
-        // }
+        player1 = random(0, 1);
+        if (player1 === 1)
+        {
+            player1.isTurn === true;
+            player2 = 0;
+        }
+        else
+        {
+            player2 = 1;
+            player2.isTurn === true;
+        }
+        if (player1.isTurn === true)
+        {
+            player1.drawingShape();
+        }
+        else
+        {
+            player2.drawingShape();
+        }
 }
 
 function singlePlayer()
