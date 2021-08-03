@@ -26,7 +26,8 @@ let gameMode = scenes.TITLE;
             |     |
  */
 
-let currentBoard = [null, null, null, null, null, null, null, null];
+// Decrement by 1 every turn. Used to check whether all the spaces are filled.
+let currentBoard = 9;
 
 function Player(name)
 {
@@ -109,7 +110,7 @@ function draw()
     drawBoard();
     drawingUserShape();
     // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
-    //checkWinner(currentBoard, coin)
+    //checkWinner()
 }
 
 /* TO-DO:
@@ -232,7 +233,24 @@ function drawingUserShape()
  */
 function checkWinner()
 {
+    // If any player has won, make their "hasWon" variable true and make the "gameOver" variable true.
+    if (player1.checkForWin())
+    {
+        player1.hasWon = true;
+        gameOver = true;
+    }
 
+    if (player2.checkForWin())
+    {
+        player2.hasWon = true;
+        gameOver = true;
+    }
+
+    // If there are no more spaces on the board, it means there's a tie since no one won.
+    if (currentBoard === 0)
+    {
+        gameOver = true;
+    }
 }
 
 
