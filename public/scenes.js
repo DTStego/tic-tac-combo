@@ -4,6 +4,43 @@
    It's incredibly important that when designing shapes and designs, you should use a variable so we can change it in color schemes functions.
  */
 
+let mgr;
+
+function setup()
+{
+    widthCanvas = 400;
+    heightCanvas = 400;
+    midX = widthCanvas / 2;
+    midY = heightCanvas / 2;
+    colorMode(HSB, 360, 100, 100);
+    backgroundColor = color(0,0,95);
+
+    mgr = new SceneManager();
+
+    mgr.addScene(title);
+    //mgr.addScene(singleplayer);
+    mgr.addScene(waitingRoom);
+    mgr.addScene(settings);
+    //mgr.addScene(multiplayer);
+
+    //mgr.showScene(title);
+
+    frameRate(30);
+
+    gravity = 1;
+    friction = 0.8; //air resistence
+}
+
+function draw()
+{
+    mgr.draw();
+}
+
+function mouseClicked()
+{
+    mgr.handleEvent("mouseClicked");
+}
+
 const scenes =
     {
         TITLE: 'title',
@@ -31,7 +68,52 @@ const scenes =
 
 function title()
 {
+    this.setup = function()
+    {
+        createCanvas(widthCanvas, heightCanvas);
+        background(200, 100, 100); // change this to variables for theme selector
+        textSize(50);
+        textAlign(CENTER, TOP);
+        text('Tic-Tac-Toe', 0, 12, width);
+        // add music
+        // Singleplayer button
+        rect((width/2)-50, 150, 100, 40);
+        textSize(15);
+        textAlign(CENTER);
+        text('Singleplayer', 0, 162, width);
+        // Multiplayer button
+        rect((width/2)-50, 200, 100, 40);
+        textSize(15);
+        textAlign(CENTER);
+        text('Multiplayer', 0, 212, width);
+        // Settings button
+        rect((width/2)-50, 250, 100, 40);
+        textSize(15);
+        textAlign(CENTER);
+        text('Settings', 0, 262, width);
+    }
 
+    this.draw = function()
+    {
+
+    }
+
+    this.mouseClicked = function()
+    {
+        // switch the scene
+        if (mouseX > (width/2)-50 && mouseX < (width/2)+50 && mouseY < 190 && mouseY > 150)
+        {
+            this.sceneManager.showScene( waitingRoom ) // this will go to singleplayer
+        }
+        if (mouseX > (width/2)-50 && mouseX < (width/2)+50 && mouseY < 240 && mouseY > 200)
+        {
+            this.sceneManager.showScene( waitingRoom ) // this will go to the waiting room
+        }
+        if (mouseX > (width/2)-50 && mouseX < (width/2)+50 && mouseY < 290 && mouseY > 250)
+        {
+            this.sceneManager.showScene( waitingRoom ) // this will go to the settings page
+        }
+    }
 }
 
 /*  This is where we instantiate the player objects, i.e., we link them with each individual player, set up who's going first, etc.
