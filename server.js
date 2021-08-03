@@ -20,13 +20,18 @@ io.sockets.on('connection', (socket) =>
         console.log("New Client " + socket.id);
 
         // When this user emits, client side: socket.emit('event',some data);
-        socket.on('mouse', (data) =>
-        {
-            // Send it to all other clients
-            socket.broadcast.emit('mouse', data);
+        // socket.on('mouse', (data) =>
+        // {
+        //     // Send it to all other clients
+        //     socket.broadcast.emit('mouse', data);
 
-            // This is a way to send to everyone including sender
-            // io.sockets.emit('message', "this goes to everyone");
+        //     // This is a way to send to everyone including sender
+        //     // io.sockets.emit('message', "this goes to everyone");
+        // });
+
+        socket.on('shape_draw', (data) => 
+        {
+            io.sockets.emit('shape_draw', data);
         });
 
         socket.on('disconnect', () =>

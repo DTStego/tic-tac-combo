@@ -69,12 +69,12 @@ function drawBoard()
     //draws the board
     stroke('black');
     strokeWeight(4);
-        
-    const c = 75
+
+    const c = 132;
         
     //vertical lines
-    line(midX-c,midY-3*c, midX-c,midY+3*c);
-    line(midX+c,midY-3*c, midX+c,midY+3*c);
+    line(midX - c, midY - 3 * c, midX - c, midY + 3 * c);
+    line(midX + c, midY - 3 * c, midX + c, midY + 3 * c);
         
     // horizontal lines
     line(midX - 3 * c, midY - c, midX + 3 * c, midY - c);

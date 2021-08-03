@@ -95,21 +95,26 @@ function setup()
     background(0);
 
     // Change to heroku url after implementation
-    socket = io.connect('http://localhost:3000');
+    socket = io.connect();
 
     console.log("In Client = " + socket.id);
 
     // When we receive input with "mouse" identifier, do anonymous function.
-    socket.on('mouse', (data) =>
-        {
+    // socket.on('mouse', (data) =>
+    //     {
 
-        });
+    //     });
+    socket.on('shape_draw', (data) => 
+    {
+        shapes = data["shapes"];
+    })
 }
 
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
 function draw()
 {
     background(0, 0, 95);
+    drawBoard();
     drawingUserShape();
     drawingFinalShapes();
     // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
@@ -143,7 +148,7 @@ function drawingUserShape()
 {
     // Looping through path (which stores the coordinate while the user is drawing) and draws the coordinates
     for (let index=0; index < path.length - 1; index++) {
-        line(path[index]["x"], path[index]["y"], path[index + 1]["x"], path[index + 1]["y"]);
+        line(path[index]["x"], path[index]["y"], path[index + 1]["x"], path[index + 1]["y"]);  // Need to draw a line, because if we draw a point, the output looks very choppy
     }
 }
 
@@ -152,7 +157,7 @@ function drawingFinalShapes()
     for (let circle of shapes["circle"])
     {
         ellipse(
-            ((widthCanvas / 3) / 2) + ((widthCanvas / 3) * (circle % 3)),  // x coordinate of center
+            ((widthCanvas / 3) / 2) + ((widthCanvas / 3) * (circle % 3)),              // x coordinate of center
             ((heightCanvas / 3) / 2) + ((heightCanvas / 3) * Math.floor(circle / 3)),  // y coordinate of center
             widthCanvas / 3 - 10, heightCanvas / 3 - 10
         )
@@ -231,10 +236,10 @@ function mousePressed()
     }
 }
 
-//when mouse released after shape drawn, analyzes shape
+// when mouse released after shape drawn, analyzes shape
 function mouseReleased()
 {
-    //analyses path data points as soon as mouse released
+    // analyses path data points as soon as mouse released
     const resultLine = window.analyzer.analyzeLine(path);
     const resultCircle = window.analyzer.analyzeCircle(path);
     // - tolerance is optional argument. Higher values lower accuracy - default 0.5
@@ -275,7 +280,12 @@ function mouseReleased()
     {
         console.log('Nothing Detected');
         path = [];
+        return;
     }
+    socket.emit("shape_draw", 
+    {
+        "shapes": shapes
+    });
 }
 
 // TODO
