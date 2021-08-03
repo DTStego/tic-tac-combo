@@ -155,53 +155,54 @@ function drawingUserShape()
 }
 
 // When mouse clicked on a certain square, sets array to that square
-// function mouseClicked()
-    //{
-    // if (0 <= mouseY && mouseY <= h/3) { // where does the variable w and h come from - austin
-    //     if (0 <= mouseX && mouseX <= w/3)
-    //     {
-    //         // This arraw allows provided access to what square the user is currently drawing in. We use this when recognizing the shape
-    //         current_drawing_in = 0; what is this 2-d array for? Which function is using the array? and since we are doing a 1-d array shoulding it just be [0] [1] [2] [3] [4] [5] [6] [7] [8]- austin
-    //     }
-    //     else if (w/3 < mouseX && mouseX <= 2*(w/3))
-    //     {
-    //         current_drawing_in = 1;
-    //     }
-    //     else if (2*(w/3) < mouseX && mouseX <= 3*(w/3))
-    //     {
-    //         current_drawing_in = 2;
-    //     }
-    // }
-    // if (h/3 <= mouseY && mouseY <= 2*(h/3)) {
-    //     if (0 <= mouseX && mouseX <= w/3)
-    //     {
-    //         current_drawing_in = 3;
-    //     }
-    //     else if (w/3 < mouseX && mouseX <= 2*(w/3))
-    //     {
-    //         current_drawing_in = 4;
-    //     }
-    //     else if (2*(w/3) < mouseX && mouseX <= 3*(w/3))
-    //     {
-    //         current_drawing_in = 5;
-    //     }
-    // }
-    // if (2*(h/3) <= mouseY && mouseY <= 3*(h/3)) {
-    //     if (0 <= mouseX && mouseX <= w/3)
-    //     {
-    //         current_drawing_in = 6;
-    //     }
-    //     else if (w/3 < mouseX && mouseX <= 2*(w/3))
-    //     {
-    //         current_drawing_in = 7;
-    //     }
-    //     else if (2*(w/3) < mouseX && mouseX <= 3*(w/3))
-    //     {
-            current_drawing_in = 8;
-    //    }
-    //}
-//}
-
+function mouseClicked()
+{
+    //if functions to determine which square the mouse clicks in
+    //once square identified, current_drawing_in variable set to square index
+    //3 if conditions for 3 columns, 3 rows in each if loop
+    if (0 <= mouseY && mouseY <= heightCanvas/3) {
+        if (0 <= mouseX && mouseX <= widthCanvas/3)
+        {
+            current_drawing_in = boardSquares[0];
+        }
+        else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
+        {
+            current_drawing_in = boardSquares[1];
+        }
+        else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
+        {
+            current_drawing_in = boardSquares[2];
+        }
+    }
+    if (heightCanvas/3 <= mouseY && mouseY <= 2*(heightCanvas/3)) {
+        if (0 <= mouseX && mouseX <= widthCanvas/3)
+        {
+            current_drawing_in = boardSquares[3];
+        }
+        else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
+        {
+            current_drawing_in = boardSquares[4];
+        }
+        else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
+        {
+            current_drawing_in = boardSquares[5];
+        }
+    }
+    if (2*(heightCanvas/3) <= mouseY && mouseY <= 3*(heightCanvas/3)) {
+        if (0 <= mouseX && mouseX <= w/3)
+        {
+            current_drawing_in = boardSquares[6];
+        }
+        else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
+        {
+            current_drawing_in = boardSquares[7];
+        }
+        else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
+        {
+           current_drawing_in = boardSquares[8];
+       }
+    }
+}
 
 //when mouse released after shape drawn, analyzes shape
 function mouseReleased()
@@ -253,6 +254,7 @@ function checkWinner()
     // If there are no more spaces on the board, neither player can win
     if (!boardSquares.includes("null") )
     {
+        console.log('tie');
         gameOver = true;
     } */
 }
