@@ -12,7 +12,6 @@ const scenes =
         SETTINGS: 'settings'
     }
 
-
 /* Background picture with some music.
    Buttons that will take you to the other scenes. Button code below 
  */

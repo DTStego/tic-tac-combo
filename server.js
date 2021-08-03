@@ -31,12 +31,20 @@ io.sockets.on('connection', (socket) =>
 
         socket.on('shape_draw', (data) => 
         {
+            let next_player;
+            if (players.indexOf(socket.id) + 1 < players.length) {
+                next_player = players[players.indexOf(socket.id) + 1];
+            } else {
+                next_player = players[0];
+            }
             io.sockets.emit('shape_draw', data);
+            io.sockets.emit('player_turn', {'player_id': next_player});
         });
 
         socket.on('disconnect', () =>
         {
-          console.log("Client " + socket.id + " has disconnected");
+            console.log(`Client ${socket.id} has disconnected`);
+            players = players.filter(item => item !== socket.id)
         });
     }
 );
