@@ -1,10 +1,11 @@
-const analyzer = require('drawn-shape-recognizer');
-
 let widthCanvas, heightCanvas, midX, midY;
 
 // Stores positions for recognized shapes. No need to store all the points, as this only shows that the shapes the user drew is recognized as.
 let shapes = {circle: [], line: []};
-let path = [];  // Stores the coordinates while the user is drawing.
+
+// Stores the coordinates while the user is drawing.
+let path = [];
+
 // Stores the square the user is currently drawing in.
 let current_drawing_in = null;
 let mouseDraw = () => ellipse(mouseX, mouseY, 5, 5);
@@ -27,13 +28,9 @@ let gameMode = scenes.TITLE;
             |     |
 */
 
-// Import player1 and player2 objects after they have been instantiated in the scenes file
-import { player1, player2 } from './scenes';
+let boardSquares = ["null", "null", "null","null", "null", "null","null", "null", "null" ];
 
-// Decrement by 1 every turn. Used to check whether all the spaces are filled.
-let currentBoard = 9;
-
-function Player(name)
+function Player(identifier)
 {
     // Check to see if it's the player's turn. When instantiating player objects, use random to make one of the player's "isTurn" variable true.
     let isTurn = false;
@@ -65,7 +62,7 @@ function Player(name)
 
 
     // Name variable to recognize player and display name.
-    this.name = name;
+    this.identifier = identifier;
 
     // Using the index, removes all occurrences of that value from winConditions.
     let updateCondition = (index) =>
@@ -86,7 +83,6 @@ function Player(name)
 }
 
 // Export the player object to use in scenes.js for implementation
-export { Player };
 
 function setup()
 {
@@ -97,11 +93,13 @@ function setup()
     midY = heightCanvas / 2;
     // the reason why it is divided by three is so that the middle square is in the middle as the board is a odd number
     createCanvas(widthCanvas, heightCanvas);
-    color.colorMode(color.HSB,360, 100, 100);
+    colorMode(HSB,360, 100, 100);
     background(0);
 
     // Change to heroku url after implementation
     socket = io.connect('http://localhost:3000');
+
+    console.log("In Client = " + socket.id);
 
     // When we receive input with "mouse" identifier, do anonymous function.
     socket.on('mouse', (data) =>
@@ -114,7 +112,6 @@ function setup()
 function draw()
 {
     background(0, 0, 95);
-    drawBoard();
     drawingUserShape();
     // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
     //checkWinner()
@@ -133,14 +130,14 @@ function draw()
  */
 function mouseDragged()
 {
-    if (player1.isTurn)
+    /* if (player1.isTurn)
     {
         path.push({x: mouseX, y: mouseY});
     }
     else
     {
 
-    }
+    } */
 }
 
 /* Use code in example.js:245-259 to detect a user's shape drawing. We'll use the result for a comparison in mouseDragged().
@@ -206,42 +203,42 @@ function drawingUserShape()
 //}
 
 
-    // when mouse released after shape drawn, analyzes shape
-    //function mouseReleased()
-    //{
-    // var resultLine = analyzer.analyzeLine(path);
-    // var resultCircle = analyzer.analyzeCircle(path);
-    //     - tolerance is optional argument. Higher values lower accuracy - default 0.5
-    //  if (resultLine['accuracy'] > 0.7)
-    //  {
-    //     console.log('Line Detected');
-    //     shapes['line'].push({square: current_drawing_in, shape: path});
-    //     path = [];
-    //  }
-    //  else if (resultCircle['accuracy'] > 0.7)
-    //  {
-    //     console.log('Circle detected');
-    //     shapes[‘circle’].push({square: current_drawing_in, shape: path});
-    //     path = [];
-    //  }
-    //  else
-    //  {
-    //     console.log('Nothing Detected');
-    //     path = [];
-    //  }
-    //}
+//when mouse released after shape drawn, analyzes shape
+function mouseReleased()
+{
+    //analyses path data points as soon as mouse released
+    const resultLine = analyzer.analyzeLine(path);
+    const resultCircle = analyzer.analyzeCircle(path);
+    // - tolerance is optional argument. Higher values lower accuracy - default 0.5
+    // the analysis returns values between 0-1, greater than 0.7 is good accuracy
 
-/* TO DO:
-      - Use the win conditions and check each player's array for a win, tie, or game continuation
-      - Iterate through each array in "winConditions". If any of them are empty, that means the player has won. Make playerX.hasWon = true
-      - If not, check to see if there's a tie by seeing if the "board" array is empty.
-        If either of the above conditions are true, make sure to make gameOver = true.
-      - Else, continue the game by doing nothing.
- */
+    //adds points to permanent shape line array if line detected
+    if (resultLine['accuracy'] > 0.7)
+    {
+        console.log('Line Detected');
+        shapes['line'].push({square: current_drawing_in, shape: path});
+        path = [];
+    }
+    //adds points to permanent shape circle array if circle detected
+    else if (resultCircle['accuracy'] > 0.7)
+    {
+        console.log('Circle detected');
+        shapes[`circle`].push({square: current_drawing_in, shape: path});
+        path = [];
+    }
+    //returns nothing detected if not clear enough
+    else
+    {
+        console.log('Nothing Detected');
+        path = [];
+    }
+}
+
+// TODO
 function checkWinner()
 {
     // If any player has won, make their "hasWon" variable true and make the "gameOver" variable true.
-    if (player1.checkForWin())
+    /* if (player1.checkForWin())
     {
         player1.hasWon = true;
         gameOver = true;
@@ -253,11 +250,11 @@ function checkWinner()
         gameOver = true;
     }
 
-    // If there are no more spaces on the board, it means there's a tie since no one won.
-    if (currentBoard === 0)
+    // If there are no more spaces on the board, neither player can win
+    if (!boardSquares.includes("null") )
     {
         gameOver = true;
-    }
+    } */
 }
 
 function sendInfo(data, identifier)

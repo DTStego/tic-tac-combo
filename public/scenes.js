@@ -4,16 +4,11 @@
    It's incredibly important that when designing shapes and designs, you should use a variable so we can change it in color schemes functions.
  */
 
-// Create and export player1 and player2 objects
-let player1, player2;
-export { player1, player2 };
-
 const scenes =
     {
         TITLE: 'title',
         WAITING: 'waitingRoom',
-        SINGLEPLAYER: 'singlePlayer',
-        MULTIPLAYER: 'multiPlayer',
+        GAME: 'game',
         SETTINGS: 'settings'
     }
 
@@ -26,41 +21,28 @@ function title()
 }
 
 /*  This is where we instantiate the player objects, i.e., we link them with each individual player, set up who's going first, etc.
-    When both players are ready, the scene will transition to either singlePlayer() or multiPlayer()
+    When both players are ready, the scene will transition to either singlePlayer() or multiPlayer().
+    Might want to do an add code using random() which will match the user with another user.
+    We can even do matchmaking and store players who want to play in an array.
  */
 function waitingRoom()
 {
-        player1 = random(0, 1);
-        if (player1 === 1)
-        {
-            player1.isTurn === true;
-            player2 = 0;
-        }
-        else
-        {
-            player2 = 1;
-            player2.isTurn === true;
-        }
-        if (player1.isTurn === true)
-        {
-            player1.drawingShape();
-        }
-        else
-        {
-            player2.drawingShape();
-        }
+
 }
 
-function singlePlayer()
+/* Draw the board and have a back button (Use goBackPrompt() if they click on the back button)
+   Have some background music and a background if possible. Remember to center the board.
+   Display the names of the players and their scores. We might want to add a time limit for each player if it's two players.
+ */
+function game()
 {
 
 }
 
-function multiPlayer()
-{
-
-}
-
+/* OPTIONAL
+      - Have a volume mixer
+      - Have a theme changer
+ */
 function settings()
 {
 
@@ -81,4 +63,12 @@ function drawBoard()
         // // horizontal lines
         // line(midX-3*c,midY-c,midX+3*c,midY-c);
         // line(midX-3*c,midY+c,midX+3*c,midY+c);
+}
+
+/* When the user wants to go back to the main menu during a game, prompt them for confirmation
+   Don't run this if the game is already over.
+ */
+function goBackPrompt()
+{
+
 }

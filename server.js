@@ -5,12 +5,12 @@ let app = express();
 // process.env.PORT is related to deploying on heroku
 let server = app.listen(process.env.PORT || 3000, listen);
 
+analyzer = require('drawn-shape-recognizer');
+
 // Method tells us when server has started
 function listen()
 {
-  let host = server.address().address; // should this be ").a" ? - austin
-  let port = server.address().port; // should this be ").p" ? - austin
-  console.log('Messaging app listening at ' + host + ':' + port);
+  console.log('Server has started');
 }
 
 // Shows only files in the "public" folder to users

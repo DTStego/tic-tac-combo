@@ -11,5 +11,8 @@
   "dependencies": {
     "express": "^4.13.4",
     "socket.io": "^2.4.0"
+  },
+  "devDependencies": {
+    "drawn-shape-recognizer": "^1.1.1"
   }
 }
