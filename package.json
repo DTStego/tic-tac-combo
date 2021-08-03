@@ -11,6 +11,7 @@
   "author": "Jimmy Nguyen, Bhavagyna Vegunta, Manvir Hansra, Austin Wong",
   "license": "ISC",
   "dependencies": {
+    "drawn-shape-recognizer": "^1.1.1",
     "express": "^4.13.4",
     "socket.io": "^2.4.0"
   },

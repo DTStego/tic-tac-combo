@@ -82,6 +82,7 @@ function Player(identifier)
 
 function setup()
 {
+    console.log("blesh")
     boardSquares = ["null", "null", "null", "null", "null", "null","null", "null", "null"];
 
     // Make this variable based on screen size while centering tic-tac-toe game.
@@ -128,20 +129,21 @@ function draw()
  */
 function mouseDragged()
 {
-    /* if (player1.isTurn)
+    path.push({x: mouseX, y: mouseY});
+    if (player1.isTurn)
     {
-        path.push({x: mouseX, y: mouseY});
+        // path.push({x: mouseX, y: mouseY});
     }
     else
     {
 
-    } */
+    }
 }
 function drawingUserShape()
 {
     // Looping through path (which stores the coordinate while the user is drawing) and draws the coordinates
-    for (let userCoords of path) {
-        mouseDraw(userCoords["x"], userCoords["y"])
+    for (let index=0; index < path.length - 1; index++) {
+        line(path[index]["x"], path[index]["y"], path[index + 1]["x"], path[index + 1]["y"]);
     }
 }
 
@@ -199,8 +201,8 @@ function mouseClicked()
 function mouseReleased()
 {
     //analyses path data points as soon as mouse released
-    const resultLine = analyzer.analyzeLine(path);
-    const resultCircle = analyzer.analyzeCircle(path);
+    const resultLine = window.analyzer.analyzeLine(path);
+    const resultCircle = window.analyzer.analyzeCircle(path);
     // - tolerance is optional argument. Higher values lower accuracy - default 0.5
     // the analysis returns values between 0-1, greater than 0.7 is good accuracy
 
