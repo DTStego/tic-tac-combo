@@ -19,6 +19,7 @@ let player2 = new Player(null, 'cross');
 let player_us = null;
 let socket = null;
 let ai = false;
+let volume = 1;
 
 function startSocket() {
     // Change to heroku url after implementation
@@ -170,7 +171,9 @@ function draw()
     }
     else if (gameMode === scenes.SETTINGS)
     {
+        stroke(0);
         music.setVolume(slider.value());
+        volume = slider.value();
         textSize(40);
         fill('white');
         text('Settings', widthCanvas/2, 40);
@@ -399,14 +402,14 @@ function mouseClicked()
         // settings button
         
     }
-    else if (mouseX >= widthCanvas - 50 &&
+    if (mouseX >= widthCanvas - 50 &&
         mouseX <= widthCanvas &&
         mouseY >= 0 &&
         mouseY <= 50)
     {
         console.log('settings');
         gameMode = scenes.SETTINGS;
-        slider = createSlider(0, 1, 1, 0.01);
+        slider = createSlider(0, 1, volume, 0.01);
         slider.position(widthCanvas/2 - 60, heightCanvas/2);
     }
 
