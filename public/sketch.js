@@ -1,6 +1,4 @@
-//variable that assigns which player won
-//have to make it so that player 1 can only draw circles
-//have to make it so that player 2 can only draw lines
+// variable that assigns which player won
 let playerThatWon;
 
 // Stores positions for recognized shapes. No need to store all the points, as this only shows that the shapes the user drew is recognized as.
@@ -11,10 +9,9 @@ let path = [];
 
 // Stores the square the user is currently drawing in.
 let current_drawing_in = null;
-let mouseDraw = () => ellipse(mouseX, mouseY, 5, 5);
 
 // Keep track of our socket connection. gameOver variable for convenience, gameMode for which scene the user is on.
-let socket,  widthCanvas, heightCanvas, midX, midY, boardSquares, analyzer;
+let socket, widthCanvas, heightCanvas, midX, midY, boardSquares;
 let current_player_id = null;
 let gameMode = scenes.TITLE;
 let player1 = new Player(null, 'circle');
@@ -233,8 +230,8 @@ function mouseReleased()
     }
 
     // analyses path data points as soon as mouse released
-    const resultLine = window.analyzer.analyzeLine(path);
-    const resultCircle = window.analyzer.analyzeCircle(path);
+    const resultLine = analyzer.analyzeLine(path);
+    const resultCircle = analyzer.analyzeCircle(path);
     // - tolerance is optional argument. Higher values lower accuracy - default 0.5
     // the analysis returns values between 0-1, greater than 0.7 is good accuracy
 
@@ -281,39 +278,23 @@ function mouseReleased()
 // TODO
 function checkWinner()
 {
-    // If any player has won, make their "hasWon" variable true and make the "gameOver" variable true.
-    /* if (player1.checkForWin())
-    {
-        player1.hasWon = true;
-        gameOver = true;
-    }
-
-    if (player2.checkForWin())
-    {
-        player2.hasWon = true;
-        gameOver = true;
-    }
-
-    // If there are no more spaces on the board, neither player can win
-    if (!boardSquares.includes("null") )
-    {
-        console.log('tie');
-        gameOver = true;
-    } */
     for (let winCondition of winConditions)
     {
         if (winCondition.every(element => shapes['circle'].includes(element)))
         {
-            console.log(`circle has won with ${winCondition}`)
+            console.log(`circle has won with ${winCondition}`);
             player1.hasWon = true;
-            //playerThatWon = player1;
             gameOver();
-        } else if (winCondition.every(element => shapes['line'].includes(element)))
+        }
+        else if (winCondition.every(element => shapes['line'].includes(element)))
         {
-            console.log(`line has won with ${winCondition}`)
-            //playerThatWon = player2;
+            console.log(`line has won with ${winCondition}`);
             player2.hasWon = true;
             gameOver();
+        }
+        else if ([0, 1, 2, 3, 4, 5, 6, 7, 8].every(element => shapes['line'].concat(shapes['circle']).includes(element)))
+        {
+            tie();
         }
     }
 }
@@ -334,12 +315,12 @@ function gameOver() {
     }
 }
 
-// function sendInfo(data, identifier)
-// {
-// /* Function for sending data to other computers.
-//    @Params - data: Object containing all the data you want to send
-//            - identifier: used to determine what data you sent
-//  */
-//   // Send that object to the socket with unique identifier.
-//   socket.emit(identifier, data);
-// }
+function tie() {
+    background('black');
+    fill('white');
+    textSize(30);
+    textAlign(CENTER, CENTER);
+    text('Tie!', widthCanvas/2, heightCanvas/2);
+}
+
+
