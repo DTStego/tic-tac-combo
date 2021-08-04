@@ -17,6 +17,11 @@ let mouseDraw = () => ellipse(mouseX, mouseY, 5, 5);
 let socket,  widthCanvas, heightCanvas, midX, midY, boardSquares, analyzer;
 let current_player_id = null;
 let gameMode = scenes.TITLE;
+let player1 = new Player(null, 'circle');
+let player2 = new Player(null, 'cross');
+let player_us = null;
+
+let gameStart = false;
 
 let winConditions =
 [
@@ -44,46 +49,6 @@ let winConditions =
             |     |
 */
 
-function Player(identifier)
-{
-    // Check to see if it's the player's turn. When instantiating player objects, use random to make one of the player's "isTurn" variable true.
-    let isTurn = false;
-
-    //if it is their turn, call the drawingShape();
-    // Don't allow the other player to draw shapes when not their turn
-
-    // Check to see if the player is an AI
-    let isAI = false;
-
-    // Player scores start at 0, will increase with each win (Useful when players want to play again).
-    let score = 0;
-
-    // Used to check if the player is the winner of the game
-    let hasWon = false;
-
-    // When any element in winConditions is empty, that means the player has won! Use updateCondition() to remove elements
-
-    // Name variable to recognize player and display name.
-    this.identifier = identifier;
-
-    // Using the index, removes all occurrences of that value from winConditions.
-    let updateCondition = (index) =>
-    {
-        // Removes the index from the player's winConditions
-        winConditions = winConditions.filter(e => e !== index);
-    }
-
-    // @returns true if the player has won the game
-    let checkForWin = () =>
-    {
-        for (let i = 0; i < winConditions.length; i++)
-        {
-            if (winConditions[i].length === 0)
-                return true;
-        }
-    }
-}
-
 // Export the player object to use in scenes.js for implementation
 
 function setup()
@@ -103,16 +68,25 @@ function setup()
     // Change to heroku url after implementation
     socket = io.connect();
 
-    console.log("In Client = " + socket.id);
+    console.log(`In Client = ${socket.id}`);
 
     // When we receive an event with some identifier, the function we provide will be called.
     socket.on('shape_draw', (data) =>
     {
-        shapes = data["shapes"];
+        shapes = data['shapes'];
     });
 
     socket.on('player_turn', (data) => {
-        current_player_id = data["player_id"];
+        current_player_id = data['player_id'];
+    });
+
+    socket.on('game_start', (data) => {
+        gameStart = true;
+    });
+
+    socket.on('type', (data) => {
+        player_us = data['circle'] ? player1: player2;
+        player_us.identifier = socket.id;
     });
 }
 
@@ -141,6 +115,9 @@ function draw()
  */
 function mouseDragged()
 {
+    if (!gameStart) {
+        return;
+    }
     path.push({x: mouseX, y: mouseY});
     /* if (player1.isTurn)
     {
@@ -155,13 +132,13 @@ function drawingUserShape()
 {
     // Looping through path (which stores the coordinate while the user is drawing) and draws the coordinates
     for (let index=0; index < path.length - 1; index++) {
-        line(path[index]["x"], path[index]["y"], path[index + 1]["x"], path[index + 1]["y"]);  // Need to draw a line, because if we draw a point, the output looks very choppy
+        line(path[index]['x'], path[index]['y'], path[index + 1]['x'], path[index + 1]['y']);  // Need to draw a line, because if we draw a point, the output looks very choppy
     }
 }
 
 function drawingFinalShapes()
 {
-    for (let circle of shapes["circle"])
+    for (let circle of shapes['circle'])
     {
         ellipse(
             ((widthCanvas / 3) / 2) + ((widthCanvas / 3) * (circle % 3)),              // x coordinate of center
@@ -170,32 +147,37 @@ function drawingFinalShapes()
         )
         
     }
-    for (let line_coords of shapes["line"])
+    for (let line_coords of shapes['line'])
     {
-        let left_corner = [
+        let top_left_corner = [
             ((widthCanvas / 3) * (line_coords % 3)),
             ((heightCanvas / 3) * Math.floor(line_coords / 3))
         ]
-        let right_corner = [
+        let top_right_corner = [
             (widthCanvas / 3) + ((widthCanvas / 3) * (line_coords % 3)),
             (heightCanvas / 3) * Math.floor(line_coords / 3)
         ]
-        let br_c = [
+        let bottom_right_corner = [
             (widthCanvas / 3) + ((widthCanvas / 3) * (line_coords % 3)),
             (heightCanvas / 3) + ((heightCanvas / 3) * Math.floor(line_coords / 3))
         ]
-        let bl_c = [
+        let bottom_left_corner = [
             ((widthCanvas / 3) * (line_coords % 3)),
             (heightCanvas / 3) + ((heightCanvas / 3) * Math.floor(line_coords / 3))
         ]
-        line(left_corner[0], left_corner[1], br_c[0], br_c[1])
-        line(right_corner[0], right_corner[1], bl_c[0], bl_c[1])
+        line(...top_left_corner, ...bottom_right_corner);
+        line(...top_right_corner, ...bottom_left_corner);
     }
 }
 
 // When mouse clicked on a certain square, sets array to that square
 function mousePressed()
 {
+    if (!gameStart) {
+        console.log('The game has not yet started. Please wait for another person to join');
+        return;
+    }
+
     // if functions to determine which square the mouse clicks in
     // once square identified, current_drawing_in variable set to square index
     // 3 if conditions for 3 columns, 3 rows in each if loop
@@ -246,64 +228,53 @@ function mousePressed()
 // when mouse released after shape drawn, analyzes shape
 function mouseReleased()
 {
+    if (!gameStart) {
+        return;
+    }
+
     // analyses path data points as soon as mouse released
     const resultLine = window.analyzer.analyzeLine(path);
     const resultCircle = window.analyzer.analyzeCircle(path);
     // - tolerance is optional argument. Higher values lower accuracy - default 0.5
     // the analysis returns values between 0-1, greater than 0.7 is good accuracy
 
+    path = [];
+
     //adds points to permanent shape line array if line detected
-    if (resultLine['accuracy'] > 0.7)
-    {
-        console.log(`Line Detected. Currently Drawing In: ${current_drawing_in}`);
-        if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in)))
+    if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in))) {
+        if (current_player_id === socket.id)
         {
-            if (current_player_id !== socket.id)
-            {
-                console.log("Not Your Turn")
+            if (resultLine['accuracy'] > 0.7) {
+                if (player_us.type === 'cross') {
+                    console.log(`Line detected. Currently drawing in: ${current_drawing_in}`);
+                    shapes['line'].push(current_drawing_in);
+                } else {
+                    console.log('You cannot draw crosses. You are allowed to draw circles.');
+                    return;
+                }
+            } else if (resultCircle['accuracy'] > 0.5) {
+                if (player_us.type === 'circle') {
+                    console.log(`Circle detected. Currently drawing in: ${current_drawing_in}`);
+                    shapes['circle'].push(current_drawing_in);
+                } else {
+                    console.log('You cannot draw circles. You are allowed to draw crosses.');
+                    return;
+                }                
+            } else {
+                console.log('The shape could not be recognized');
+                return;
             }
-            else
-            {
-                shapes['line'].push(current_drawing_in);
-            }
+        } else {
+            console.log('Not Your Turn');
+            return;
         }
-        else
-        {
-            console.log("Square taken")
-        }
-        path = [];
-    }
-    //adds points to permanent shape circle array if circle detected
-    else if (resultCircle['accuracy'] > 0.5)
-    {
-        console.log(`Circle detected Currently Drawing In: ${current_drawing_in}`);
-        if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in)))
-        {
-            if (current_player_id !== socket.id)
-            {
-                console.log("Not Your Turn")
-            }
-            else
-            {
-                shapes['circle'].push(current_drawing_in);
-            }
-        }
-        else
-        {
-            console.log("Square taken")
-        }
-        path = [];
-    }
-    //returns nothing detected if not clear enough
-    else
-    {
-        console.log('Nothing Detected');
-        path = [];
+    } else {
+        console.log('Square taken');
         return;
     }
-    socket.emit("shape_draw", 
+    socket.emit('shape_draw', 
     {
-        "shapes": shapes
+        'shapes': shapes
     });
 }
 
@@ -334,29 +305,41 @@ function checkWinner()
         if (winCondition.every(element => shapes['circle'].includes(element)))
         {
             console.log(`circle has won with ${winCondition}`)
+            player1.hasWon = true;
             //playerThatWon = player1;
             gameOver();
         } else if (winCondition.every(element => shapes['line'].includes(element)))
         {
             console.log(`line has won with ${winCondition}`)
             //playerThatWon = player2;
+            player2.hasWon = true;
             gameOver();
         }
     }
 }
 
-function gameOver(){
+function gameOver() {
     background('black');
     fill('white');
-    text( `GAME OVER! ${playerThatWon} has won.`, widthCanvas/2 -30, heightCanvas/2);
+    textSize(30);
+    textAlign(CENTER, CENTER);
+    text(`Game Over! ${player1.hasWon ? 'Player 1': 'Player 2'} has won.`, widthCanvas/2, heightCanvas/2);
+    if (player1.hasWon)
+    {
+        player1.score++;
+    }
+    else if (player2.hasWon)
+    {
+        player2.score++;
+    }
 }
 
-function sendInfo(data, identifier)
-{
-/* Function for sending data to other computers.
-   @Params - data: Object containing all the data you want to send
-           - identifier: used to determine what data you sent
- */
-  // Send that object to the socket with unique identifier.
-  socket.emit(identifier, data);
-}
+// function sendInfo(data, identifier)
+// {
+// /* Function for sending data to other computers.
+//    @Params - data: Object containing all the data you want to send
+//            - identifier: used to determine what data you sent
+//  */
+//   // Send that object to the socket with unique identifier.
+//   socket.emit(identifier, data);
+// }

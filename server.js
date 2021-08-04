@@ -25,13 +25,16 @@ io.sockets.on('connection', (socket) =>
         if (players.length === 2)
         {
             io.sockets.emit('player_turn', {'player_id': players[0]});
+            io.sockets.emit('game_start', {'game_start': true});
+            io.to(players[0]).emit('type', {'circle': true, 'line': false});
+            io.to(players[1]).emit('type', {'circle': false, 'line': true});
         }
         else if (players.length > 2)
         {
-            console.log("To many players!! Alert!");
+            console.log("To many players! Alert!");
         }
 
-        // When this user emits, client side: socket.emit('event',some data);
+        // When this user emits, client side: socket.emit('event', some data);
         // socket.on('mouse', (data) =>
         // {
         //     // Send it to all other clients
