@@ -11,7 +11,7 @@ let path = [];
 let current_drawing_in = null;
 
 // Keep track of our socket connection. gameOver variable for convenience, gameMode for which scene the user is on.
-let widthCanvas, heightCanvas, midX, midY, music, gif, settings_icon, back_arrow;
+let canvas, widthCanvas, heightCanvas, midX, midY, music, gif, settings_icon, back_arrow;
 let slider = null;
 let current_player_id = null;
 let player1 = new Player(null, 'circle');
@@ -19,6 +19,7 @@ let player2 = new Player(null, 'cross');
 let player_us = null;
 let socket = null;
 let ai = false;
+let volume = 1;
 
 function startSocket() {
     // Change to heroku url after implementation
@@ -107,14 +108,16 @@ function setup()
     userStartAudio();
 
     // Make this variable based on screen size while centering tic-tac-toe game.
-    widthCanvas = 800;
-    heightCanvas = 800;
+    widthCanvas = 600;
+    heightCanvas = 600;
     midX = widthCanvas / 2;
     midY = heightCanvas / 2;
     // the reason why it is divided by three is so that the middle square is in the middle as the board is a odd number
-    createCanvas(widthCanvas, heightCanvas);
+    canvas = createCanvas(widthCanvas, heightCanvas);
     // colorMode(HSB, 360, 100, 100);
     background(0);
+
+    canvas.position((window.innerWidth - widthCanvas) / 2, 0);
 }
 
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
@@ -170,7 +173,9 @@ function draw()
     }
     else if (gameMode === scenes.SETTINGS)
     {
+        stroke(0);
         music.setVolume(slider.value());
+        volume = slider.value();
         textSize(40);
         fill('white');
         text('Settings', widthCanvas/2, 40);
@@ -399,14 +404,14 @@ function mouseClicked()
         // settings button
         
     }
-    else if (mouseX >= widthCanvas - 50 &&
+    if (mouseX >= widthCanvas - 50 &&
         mouseX <= widthCanvas &&
         mouseY >= 0 &&
         mouseY <= 50)
     {
         console.log('settings');
         gameMode = scenes.SETTINGS;
-        slider = createSlider(0, 1, 1, 0.01);
+        slider = createSlider(0, 1, volume, 0.01);
         slider.position(widthCanvas/2 - 60, heightCanvas/2);
     }
 
@@ -557,4 +562,8 @@ function tie() {
         text('Go Back to Home!', widthCanvas/2 + ((125 / 2) + 75), heightCanvas/2);
         noFill();
     }
+}
+
+function windowResized() {
+    canvas.position((window.innerWidth - widthCanvas) / 2, 0);
 }
