@@ -4,6 +4,23 @@
    It's incredibly important that when designing shapes and designs, you should use a variable so we can change it in color schemes functions.
  */
 
+/*
+Title (AI or Multiplayer)
+          |
+         /\
+        /  \
+       /    \
+      /      \
+     /      AI (Select Difficultly)
+    |        |
+Waiting    Game
+  Room
+    |
+  Game
+
+At any point the user can go to settings.
+*/
+
 let mgr;
 
 // function setup()
@@ -42,12 +59,13 @@ let mgr;
 // }
 
 const scenes =
-    {
-        TITLE: 'title',
-        WAITING: 'waitingRoom',
-        GAME: 'game',
-        SETTINGS: 'settings'
-    }
+{
+    TITLE: 'title',   
+    WAITING: 'waitingRoom',
+    AI_DIFFICULTY: 'aiDifficulty',
+    GAME: 'game',
+    SETTINGS: 'settings',
+}
 
 // /* Background picture with some music.
 //    Buttons that will take you to the other scenes. Button code below 

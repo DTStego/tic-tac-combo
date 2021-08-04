@@ -11,7 +11,7 @@ let path = [];
 let current_drawing_in = null;
 
 // Keep track of our socket connection. gameOver variable for convenience, gameMode for which scene the user is on.
-let socket, widthCanvas, heightCanvas, midX, midY, boardSquares;
+let socket, widthCanvas, heightCanvas, midX, midY;
 let current_player_id = null;
 let gameMode = scenes.TITLE;
 let player1 = new Player(null, 'circle');
@@ -48,10 +48,15 @@ let winConditions =
 
 // Export the player object to use in scenes.js for implementation
 
+
+function preload()
+{
+    gif = loadImage('https://www.google.com/url?sa=i&url=https%3A%2F%2Fgiphy.com%2Fexplore%2Finfinite-zoom&psig=AOvVaw2_MV6qXI2CV6iOLsnvJnEP&ust=1628124759883000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCPit_cGTlvICFQAAAAAdAAAAABAI');  // Loads the gif image. Use with gif_var.play() and gif_var.pause()
+    music = loadSound('');
+}
+
 function setup()
 {
-    boardSquares = [null, null, null, null, null, null, null, null, null];
-
     // Make this variable based on screen size while centering tic-tac-toe game.
     widthCanvas = 800;
     heightCanvas = 800;
@@ -59,7 +64,7 @@ function setup()
     midY = heightCanvas / 2;
     // the reason why it is divided by three is so that the middle square is in the middle as the board is a odd number
     createCanvas(widthCanvas, heightCanvas);
-    colorMode(HSB,360, 100, 100);
+    colorMode(HSB, 360, 100, 100);
     background(0);
 
     // Change to heroku url after implementation
@@ -90,11 +95,31 @@ function setup()
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
 function draw()
 {
-    background(0, 0, 95);
-    drawBoard();
-    drawingUserShape();
-    drawingFinalShapes();
-    checkWinner();
+    if (gameMode === scenes.TITLE)
+    {
+        drawTitle();
+    }
+    else if (gameMode === scenes.WAITING)
+    {
+        
+    }
+    else if (gameMode === scenes.AI_DIFFICULTY)
+    {
+        
+    }
+    else if (gameMode === scenes.GAME)
+    {
+        background(0, 0, 95);
+        drawBoard();
+        drawingUserShape();
+        drawingFinalShapes();
+        checkWinner();
+    }
+    else if (gameMode === scenes.SETTINGS)
+    {
+
+    }
+    
     // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
     //checkWinner()
 }
@@ -112,19 +137,17 @@ function draw()
  */
 function mouseDragged()
 {
-    if (!gameStart) {
-        return;
-    }
-    path.push({x: mouseX, y: mouseY});
-    /* if (player1.isTurn)
+    if (gameMode === scenes.GAME)
     {
-        // path.push({x: mouseX, y: mouseY});
+        if (!gameStart)
+        {
+            return;
+        }
+        path.push({x: mouseX, y: mouseY});
     }
-    else
-    {
-
-    } */
 }
+
+
 function drawingUserShape()
 {
     // Looping through path (which stores the coordinate while the user is drawing) and draws the coordinates
@@ -170,112 +193,120 @@ function drawingFinalShapes()
 // When mouse clicked on a certain square, sets array to that square
 function mousePressed()
 {
-    if (!gameStart) {
-        console.log('The game has not yet started. Please wait for another person to join');
-        return;
-    }
+    if (gameMode === scenes.GAME)
+    {
+        if (!gameStart)
+        {
+            console.log('The game has not yet started. Please wait for another person to join');
+            return;
+        }
 
-    // if functions to determine which square the mouse clicks in
-    // once square identified, current_drawing_in variable set to square index
-    // 3 if conditions for 3 columns, 3 rows in each if loop
-    if (0 <= mouseY && mouseY <= heightCanvas/3) {
-        if (0 <= mouseX && mouseX <= widthCanvas/3)
-        {
-            current_drawing_in = 0;
+        // if functions to determine which square the mouse clicks in
+        // once square identified, current_drawing_in variable set to square index
+        // 3 if conditions for 3 columns, 3 rows in each if loop
+        if (0 <= mouseY && mouseY <= heightCanvas/3) {
+            if (0 <= mouseX && mouseX <= widthCanvas/3)
+            {
+                current_drawing_in = 0;
+            }
+            else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
+            {
+                current_drawing_in = 1;
+            }
+            else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
+            {
+                current_drawing_in = 2;
+            }
         }
-        else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
-        {
-            current_drawing_in = 1;
+        else if (heightCanvas/3 <= mouseY && mouseY <= 2*(heightCanvas/3)) {
+            if (0 <= mouseX && mouseX <= widthCanvas/3)
+            {
+                current_drawing_in = 3;
+            }
+            else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
+            {
+                current_drawing_in = 4;
+            }
+            else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
+            {
+                current_drawing_in = 5;
+            }
         }
-        else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
-        {
-            current_drawing_in = 2;
+        else if (2*(heightCanvas/3) <= mouseY && mouseY <= 3*(heightCanvas/3)) {
+            if (0 <= mouseX && mouseX <= widthCanvas/3)
+            {
+                current_drawing_in = 6;
+            }
+            else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
+            {
+                current_drawing_in = 7;
+            }
+            else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
+            {
+                current_drawing_in = 8;
         }
-    }
-    else if (heightCanvas/3 <= mouseY && mouseY <= 2*(heightCanvas/3)) {
-        if (0 <= mouseX && mouseX <= widthCanvas/3)
-        {
-            current_drawing_in = 3;
         }
-        else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
-        {
-            current_drawing_in = 4;
-        }
-        else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
-        {
-            current_drawing_in = 5;
-        }
-    }
-    else if (2*(heightCanvas/3) <= mouseY && mouseY <= 3*(heightCanvas/3)) {
-        if (0 <= mouseX && mouseX <= widthCanvas/3)
-        {
-            current_drawing_in = 6;
-        }
-        else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
-        {
-            current_drawing_in = 7;
-        }
-        else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
-        {
-            current_drawing_in = 8;
-       }
     }
 }
 
 // when mouse released after shape drawn, analyzes shape
 function mouseReleased()
 {
-    if (!gameStart) {
-        return;
-    }
-
-    // analyses path data points as soon as mouse released
-    const resultLine = analyzer.analyzeLine(path);
-    const resultCircle = analyzer.analyzeCircle(path);
-    // - tolerance is optional argument. Higher values lower accuracy - default 0.5
-    // the analysis returns values between 0-1, greater than 0.7 is good accuracy
-
-    path = [];
-
-    //adds points to permanent shape line array if line detected
-    if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in))) {
-        if (current_player_id === socket.id)
+    if (gameMode === scenes.GAME)
+    {
+        if (!gameStart)
         {
-            if (resultLine['accuracy'] > 0.7) {
-                if (player_us.type === 'cross') {
-                    console.log(`Line detected. Currently drawing in: ${current_drawing_in}`);
-                    shapes['line'].push(current_drawing_in);
+            return;
+        }
+
+        // analyses path data points as soon as mouse released
+        const resultLine = analyzer.analyzeLine(path);
+        const resultCircle = analyzer.analyzeCircle(path);
+        // - tolerance is optional argument. Higher values lower accuracy - default 0.5
+        // the analysis returns values between 0-1, greater than 0.7 is good accuracy
+
+        path = [];
+
+        //adds points to permanent shape line array if line detected
+        if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in))) {
+            if (current_player_id === socket.id)
+            {
+                if (resultLine['accuracy'] > 0.7) {
+                    if (player_us.type === 'cross') {
+                        console.log(`Line detected. Currently drawing in: ${current_drawing_in}`);
+                        shapes['line'].push(current_drawing_in);
+                    } else {
+                        console.log('You cannot draw crosses. You are allowed to draw circles.');
+                        return;
+                    }
+                } else if (resultCircle['accuracy'] > 0.5) {
+                    if (player_us.type === 'circle') {
+                        console.log(`Circle detected. Currently drawing in: ${current_drawing_in}`);
+                        shapes['circle'].push(current_drawing_in);
+                    } else {
+                        console.log('You cannot draw circles. You are allowed to draw crosses.');
+                        return;
+                    }                
                 } else {
-                    console.log('You cannot draw crosses. You are allowed to draw circles.');
+                    console.log('The shape could not be recognized');
                     return;
                 }
-            } else if (resultCircle['accuracy'] > 0.5) {
-                if (player_us.type === 'circle') {
-                    console.log(`Circle detected. Currently drawing in: ${current_drawing_in}`);
-                    shapes['circle'].push(current_drawing_in);
-                } else {
-                    console.log('You cannot draw circles. You are allowed to draw crosses.');
-                    return;
-                }                
             } else {
-                console.log('The shape could not be recognized');
+                console.log('Not Your Turn');
                 return;
             }
         } else {
-            console.log('Not Your Turn');
+            console.log('Square taken');
             return;
         }
-    } else {
-        console.log('Square taken');
-        return;
+        socket.emit('shape_draw', 
+        {
+            'shapes': shapes
+        });
     }
-    socket.emit('shape_draw', 
-    {
-        'shapes': shapes
-    });
+    
 }
 
-// TODO
 function checkWinner()
 {
     for (let winCondition of winConditions)
