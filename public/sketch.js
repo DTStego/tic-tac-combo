@@ -1,6 +1,4 @@
-//variable that assigns which player won
-//have to make it so that player 1 can only draw circles
-//have to make it so that player 2 can only draw lines
+// variable that assigns which player won
 let playerThatWon;
 
 // Stores positions for recognized shapes. No need to store all the points, as this only shows that the shapes the user drew is recognized as.
@@ -11,12 +9,28 @@ let path = [];
 
 // Stores the square the user is currently drawing in.
 let current_drawing_in = null;
-let mouseDraw = () => ellipse(mouseX, mouseY, 5, 5);
 
 // Keep track of our socket connection. gameOver variable for convenience, gameMode for which scene the user is on.
-let socket,  widthCanvas, heightCanvas, midX, midY, boardSquares, analyzer;
+let socket, widthCanvas, heightCanvas, midX, midY, music, gif, settings_icon, back_arrow;
+let slider = null;
 let current_player_id = null;
+let player1 = new Player(null, 'circle');
+let player2 = new Player(null, 'cross');
+let player_us = null;
+
+const scenes =
+{
+    TITLE: 'title',   
+    WAITING: 'waitingRoom',
+    AI_DIFFICULTY: 'aiDifficulty',
+    GAME: 'game',
+    SETTINGS: 'settings',
+}
+
 let gameMode = scenes.TITLE;
+let prevScreen = gameMode;
+
+let gameStart = false;
 
 let winConditions =
 [
@@ -44,51 +58,20 @@ let winConditions =
             |     |
 */
 
-function Player(identifier)
-{
-    // Check to see if it's the player's turn. When instantiating player objects, use random to make one of the player's "isTurn" variable true.
-    let isTurn = false;
-
-    //if it is their turn, call the drawingShape();
-    // Don't allow the other player to draw shapes when not their turn
-
-    // Check to see if the player is an AI
-    let isAI = false;
-
-    // Player scores start at 0, will increase with each win (Useful when players want to play again).
-    let score = 0;
-
-    // Used to check if the player is the winner of the game
-    let hasWon = false;
-
-    // When any element in winConditions is empty, that means the player has won! Use updateCondition() to remove elements
-
-    // Name variable to recognize player and display name.
-    this.identifier = identifier;
-
-    // Using the index, removes all occurrences of that value from winConditions.
-    let updateCondition = (index) =>
-    {
-        // Removes the index from the player's winConditions
-        winConditions = winConditions.filter(e => e !== index);
-    }
-
-    // @returns true if the player has won the game
-    let checkForWin = () =>
-    {
-        for (let i = 0; i < winConditions.length; i++)
-        {
-            if (winConditions[i].length === 0)
-                return true;
-        }
-    }
-}
-
 // Export the player object to use in scenes.js for implementation
+
+
+function preload()
+{
+    gif = loadImage('gif1.gif');  // Loads the gif image. Use with gif_var.play() and gif_var.pause()
+    music = loadSound('music1.mp3');
+    settings_icon = loadImage('settings_icon.png');
+    back_arrow = loadImage('back_arrow.png');
+}
 
 function setup()
 {
-    boardSquares = [null, null, null, null, null, null, null, null, null];
+    userStartAudio();
 
     // Make this variable based on screen size while centering tic-tac-toe game.
     widthCanvas = 800;
@@ -97,33 +80,97 @@ function setup()
     midY = heightCanvas / 2;
     // the reason why it is divided by three is so that the middle square is in the middle as the board is a odd number
     createCanvas(widthCanvas, heightCanvas);
-    colorMode(HSB,360, 100, 100);
+    // colorMode(HSB, 360, 100, 100);
     background(0);
 
     // Change to heroku url after implementation
     socket = io.connect();
 
-    console.log("In Client = " + socket.id);
+    console.log(`In Client = ${socket.id}`);
 
     // When we receive an event with some identifier, the function we provide will be called.
     socket.on('shape_draw', (data) =>
     {
-        shapes = data["shapes"];
+        shapes = data['shapes'];
     });
 
     socket.on('player_turn', (data) => {
-        current_player_id = data["player_id"];
+        current_player_id = data['player_id'];
+    });
+
+    socket.on('game_start', (data) => {
+        gameStart = true;
+    });
+
+    socket.on('type', (data) => {
+        player_us = data['circle'] ? player1: player2;
+        player_us.identifier = socket.id;
     });
 }
 
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
 function draw()
 {
-    background(0, 0, 95);
-    drawBoard();
-    drawingUserShape();
-    drawingFinalShapes();
-    checkWinner();
+    if (!music.isPlaying()) {
+        music.play();
+    }
+    if (gameMode !== scenes.SETTINGS && slider !== null) {
+        slider.remove();
+        slider = null;
+    }
+    background(gif);
+    textAlign(CENTER, CENTER);
+    if (gameMode === scenes.TITLE)
+    {
+        textSize(40);
+        fill('white');
+        text('Tic-Tac-Toe Home', widthCanvas/2, 40);
+        noFill();
+        fill(color(0, 0, 0));
+        rect(widthCanvas/2 - (50 + 125), heightCanvas/2 - 25, 125, 50);
+        rect(widthCanvas/2 + (125 - 50), heightCanvas/2 - 25, 125, 50);
+        noFill();
+        fill(color(0, 255, 0));
+        textSize(20);
+        text('Multiplayer!', widthCanvas/2 - ((125 / 2) + 50), heightCanvas/2);
+        text('Computer!', widthCanvas/2 + ((125 / 2) + 75), heightCanvas/2);
+        noFill();
+        prevScreen = scenes.TITLE;
+    }
+    else if (gameMode === scenes.WAITING)
+    {
+        prevScreen = scenes.WAITING;
+    }
+    else if (gameMode === scenes.AI_DIFFICULTY)
+    {
+        prevScreen = scenes.AI_DIFFICULTY;
+    }
+    else if (gameMode === scenes.GAME)
+    {
+        background(0, 0, 95);
+        drawBoard();
+        drawingUserShape();
+        drawingFinalShapes();
+        checkWinner();
+        prevScreen = scenes.GAME;
+    }
+    else if (gameMode === scenes.SETTINGS)
+    {
+        music.setVolume(slider.value());
+        textSize(40);
+        fill('white');
+        text('Settings', widthCanvas/2, 40);
+        textSize(20);
+        text('Volume Level', widthCanvas/2, heightCanvas/2 - 30);
+        noFill();
+    }
+    fill('white');
+    image(settings_icon, widthCanvas - 50, 0, 50, 50);
+    
+    // go back function
+    // rect(0, 0, 50, 50);
+    image(back_arrow, 5, 5, 70, 52.5);
+    noFill();
     // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
     //checkWinner()
 }
@@ -141,27 +188,28 @@ function draw()
  */
 function mouseDragged()
 {
-    path.push({x: mouseX, y: mouseY});
-    /* if (player1.isTurn)
+    if (gameMode === scenes.GAME)
     {
-        // path.push({x: mouseX, y: mouseY});
+        if (!gameStart)
+        {
+            return;
+        }
+        path.push({x: mouseX, y: mouseY});
     }
-    else
-    {
-
-    } */
 }
+
+
 function drawingUserShape()
 {
     // Looping through path (which stores the coordinate while the user is drawing) and draws the coordinates
     for (let index=0; index < path.length - 1; index++) {
-        line(path[index]["x"], path[index]["y"], path[index + 1]["x"], path[index + 1]["y"]);  // Need to draw a line, because if we draw a point, the output looks very choppy
+        line(path[index]['x'], path[index]['y'], path[index + 1]['x'], path[index + 1]['y']);  // Need to draw a line, because if we draw a point, the output looks very choppy
     }
 }
 
 function drawingFinalShapes()
 {
-    for (let circle of shapes["circle"])
+    for (let circle of shapes['circle'])
     {
         ellipse(
             ((widthCanvas / 3) / 2) + ((widthCanvas / 3) * (circle % 3)),              // x coordinate of center
@@ -170,193 +218,261 @@ function drawingFinalShapes()
         )
         
     }
-    for (let line_coords of shapes["line"])
+    for (let line_coords of shapes['line'])
     {
-        let left_corner = [
+        let top_left_corner = [
             ((widthCanvas / 3) * (line_coords % 3)),
             ((heightCanvas / 3) * Math.floor(line_coords / 3))
         ]
-        let right_corner = [
+        let top_right_corner = [
             (widthCanvas / 3) + ((widthCanvas / 3) * (line_coords % 3)),
             (heightCanvas / 3) * Math.floor(line_coords / 3)
         ]
-        let br_c = [
+        let bottom_right_corner = [
             (widthCanvas / 3) + ((widthCanvas / 3) * (line_coords % 3)),
             (heightCanvas / 3) + ((heightCanvas / 3) * Math.floor(line_coords / 3))
         ]
-        let bl_c = [
+        let bottom_left_corner = [
             ((widthCanvas / 3) * (line_coords % 3)),
             (heightCanvas / 3) + ((heightCanvas / 3) * Math.floor(line_coords / 3))
         ]
-        line(left_corner[0], left_corner[1], br_c[0], br_c[1])
-        line(right_corner[0], right_corner[1], bl_c[0], bl_c[1])
+        line(...top_left_corner, ...bottom_right_corner);
+        line(...top_right_corner, ...bottom_left_corner);
     }
+}
+
+function drawBoard()
+{
+    // draws the board
+    stroke('black');
+    strokeWeight(4);
+
+    // let c = Math.round((widthCanvas + heightCanvas) / (2*9));
+    let c = 132;
+
+    // vertical lines;
+    line(midX - c, midY - 3 * c, midX - c, midY + 3 * c);
+    line(midX + c, midY - 3 * c, midX + c, midY + 3 * c);
+        
+    // horizontal lines
+    line(midX - 3 * c, midY - c, midX + 3 * c, midY - c);
+    line(midX - 3 * c, midY + c, midX + 3 * c, midY + c);
 }
 
 // When mouse clicked on a certain square, sets array to that square
 function mousePressed()
 {
-    // if functions to determine which square the mouse clicks in
-    // once square identified, current_drawing_in variable set to square index
-    // 3 if conditions for 3 columns, 3 rows in each if loop
-    if (0 <= mouseY && mouseY <= heightCanvas/3) {
-        if (0 <= mouseX && mouseX <= widthCanvas/3)
+    if (gameMode === scenes.GAME)
+    {
+        if (!gameStart)
         {
-            current_drawing_in = 0;
+            console.log('The game has not yet started. Please wait for another person to join');
+            return;
         }
-        else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
-        {
-            current_drawing_in = 1;
+
+        // if functions to determine which square the mouse clicks in
+        // once square identified, current_drawing_in variable set to square index
+        // 3 if conditions for 3 columns, 3 rows in each if loop
+        if (0 <= mouseY && mouseY <= heightCanvas/3) {
+            if (0 <= mouseX && mouseX <= widthCanvas/3)
+            {
+                current_drawing_in = 0;
+            }
+            else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
+            {
+                current_drawing_in = 1;
+            }
+            else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
+            {
+                current_drawing_in = 2;
+            }
         }
-        else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
-        {
-            current_drawing_in = 2;
+        else if (heightCanvas/3 <= mouseY && mouseY <= 2*(heightCanvas/3)) {
+            if (0 <= mouseX && mouseX <= widthCanvas/3)
+            {
+                current_drawing_in = 3;
+            }
+            else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
+            {
+                current_drawing_in = 4;
+            }
+            else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
+            {
+                current_drawing_in = 5;
+            }
+        }
+        else if (2*(heightCanvas/3) <= mouseY && mouseY <= 3*(heightCanvas/3)) {
+            if (0 <= mouseX && mouseX <= widthCanvas/3)
+            {
+                current_drawing_in = 6;
+            }
+            else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
+            {
+                current_drawing_in = 7;
+            }
+            else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
+            {
+                current_drawing_in = 8;
+        }
         }
     }
-    else if (heightCanvas/3 <= mouseY && mouseY <= 2*(heightCanvas/3)) {
-        if (0 <= mouseX && mouseX <= widthCanvas/3)
-        {
-            current_drawing_in = 3;
-        }
-        else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
-        {
-            current_drawing_in = 4;
-        }
-        else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
-        {
-            current_drawing_in = 5;
-        }
+    else (gameMode === scenes.TITLE)
+    {
+       
     }
-    else if (2*(heightCanvas/3) <= mouseY && mouseY <= 3*(heightCanvas/3)) {
-        if (0 <= mouseX && mouseX <= widthCanvas/3)
+}
+
+function mouseClicked()
+{
+    console.log(mouseX, mouseY)
+    // title page buttons clicked
+    // if multiplayer clicked
+    if (gameMode === scenes.TITLE)
+    {
+        if (mouseX >= widthCanvas/2 - (50 + 125) && 
+            mouseX <= widthCanvas/2 - 50 && 
+            mouseY >= heightCanvas/2 - 25 && 
+            mouseY <= heightCanvas/2 + 25)
         {
-            current_drawing_in = 6;
+            console.log('waiting')
+            gameMode = scenes.WAITING;
         }
-        else if (widthCanvas/3 < mouseX && mouseX <= 2*(widthCanvas/3))
+        //if singleplayer clicked
+        else if (mouseX >= widthCanvas/2 + (125 - 50) && 
+                mouseX <= widthCanvas/2 + (250 - 50) && 
+                mouseY>= heightCanvas/2 - 25 && 
+                mouseY <= heightCanvas/2 + 25)
         {
-            current_drawing_in = 7;
+            console.log("game");
+            gameMode = scenes.GAME;
         }
-        else if (2*(widthCanvas/3) < mouseX && mouseX <= 3*(widthCanvas/3))
-        {
-            current_drawing_in = 8;
-       }
+
+        // settings button
+        
+    }
+    if (mouseX >= widthCanvas - 50 &&
+        mouseX <= widthCanvas &&
+        mouseY >= 0 &&
+        mouseY <= 50)
+    {
+        console.log("settings");
+        gameMode = scenes.SETTINGS;
+        slider = createSlider(0, 1, 1, 0.01);
+        slider.position(widthCanvas/2 - 60, heightCanvas/2);
+    }
+
+    if (mouseX >= 0 &&
+        mouseX <= 50 &&
+        mouseY >= 0 &&
+        mouseY <= 50)
+    {
+        gameMode = prevScreen;
     }
 }
 
 // when mouse released after shape drawn, analyzes shape
 function mouseReleased()
 {
-    // analyses path data points as soon as mouse released
-    const resultLine = window.analyzer.analyzeLine(path);
-    const resultCircle = window.analyzer.analyzeCircle(path);
-    // - tolerance is optional argument. Higher values lower accuracy - default 0.5
-    // the analysis returns values between 0-1, greater than 0.7 is good accuracy
+    if (gameMode === scenes.GAME)
+    {
+        if (!gameStart)
+        {
+            return;
+        }
 
-    //adds points to permanent shape line array if line detected
-    if (resultLine['accuracy'] > 0.7)
-    {
-        console.log(`Line Detected. Currently Drawing In: ${current_drawing_in}`);
-        if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in)))
-        {
-            if (current_player_id !== socket.id)
-            {
-                console.log("Not Your Turn")
-            }
-            else
-            {
-                shapes['line'].push(current_drawing_in);
-            }
-        }
-        else
-        {
-            console.log("Square taken")
-        }
+        // analyses path data points as soon as mouse released
+        const resultLine = analyzer.analyzeLine(path);
+        const resultCircle = analyzer.analyzeCircle(path);
+        // - tolerance is optional argument. Higher values lower accuracy - default 0.5
+        // the analysis returns values between 0-1, greater than 0.7 is good accuracy
+
         path = [];
-    }
-    //adds points to permanent shape circle array if circle detected
-    else if (resultCircle['accuracy'] > 0.5)
-    {
-        console.log(`Circle detected Currently Drawing In: ${current_drawing_in}`);
-        if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in)))
-        {
-            if (current_player_id !== socket.id)
+
+        //adds points to permanent shape line array if line detected
+        if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in))) {
+            if (current_player_id === socket.id)
             {
-                console.log("Not Your Turn")
+                if (resultLine['accuracy'] > 0.7) {
+                    if (player_us.type === 'cross') {
+                        console.log(`Line detected. Currently drawing in: ${current_drawing_in}`);
+                        shapes['line'].push(current_drawing_in);
+                    } else {
+                        console.log('You cannot draw crosses. You are allowed to draw circles.');
+                        return;
+                    }
+                } else if (resultCircle['accuracy'] > 0.5) {
+                    if (player_us.type === 'circle') {
+                        console.log(`Circle detected. Currently drawing in: ${current_drawing_in}`);
+                        shapes['circle'].push(current_drawing_in);
+                    } else {
+                        console.log('You cannot draw circles. You are allowed to draw crosses.');
+                        return;
+                    }                
+                } else {
+                    console.log('The shape could not be recognized');
+                    return;
+                }
+            } else {
+                console.log('Not Your Turn');
+                return;
             }
-            else
-            {
-                shapes['circle'].push(current_drawing_in);
-            }
+        } else {
+            console.log('Square taken');
+            return;
         }
-        else
+        socket.emit('shape_draw', 
         {
-            console.log("Square taken")
-        }
-        path = [];
+            'shapes': shapes
+        });
     }
-    //returns nothing detected if not clear enough
-    else
-    {
-        console.log('Nothing Detected');
-        path = [];
-        return;
-    }
-    socket.emit("shape_draw", 
-    {
-        "shapes": shapes
-    });
+    
 }
 
-// TODO
 function checkWinner()
 {
-    // If any player has won, make their "hasWon" variable true and make the "gameOver" variable true.
-    /* if (player1.checkForWin())
-    {
-        player1.hasWon = true;
-        gameOver = true;
-    }
-
-    if (player2.checkForWin())
-    {
-        player2.hasWon = true;
-        gameOver = true;
-    }
-
-    // If there are no more spaces on the board, neither player can win
-    if (!boardSquares.includes("null") )
-    {
-        console.log('tie');
-        gameOver = true;
-    } */
     for (let winCondition of winConditions)
     {
         if (winCondition.every(element => shapes['circle'].includes(element)))
         {
-            console.log(`circle has won with ${winCondition}`)
-            //playerThatWon = player1;
+            console.log(`circle has won with ${winCondition}`);
+            player1.hasWon = true;
             gameOver();
-        } else if (winCondition.every(element => shapes['line'].includes(element)))
+        }
+        else if (winCondition.every(element => shapes['line'].includes(element)))
         {
-            console.log(`line has won with ${winCondition}`)
-            //playerThatWon = player2;
+            console.log(`line has won with ${winCondition}`);
+            player2.hasWon = true;
             gameOver();
+        }
+        else if ([0, 1, 2, 3, 4, 5, 6, 7, 8].every(element => shapes['line'].concat(shapes['circle']).includes(element)))
+        {
+            tie();
         }
     }
 }
 
-function gameOver(){
+function gameOver() {
     background('black');
     fill('white');
-    text( `GAME OVER! ${playerThatWon} has won.`, widthCanvas/2 -30, heightCanvas/2);
+    textSize(30);
+    textAlign(CENTER, CENTER);
+    text(`Game Over! ${player1.hasWon ? 'Player 1': 'Player 2'} has won.`, widthCanvas/2, heightCanvas/2);
+    if (player1.hasWon)
+    {
+        player1.score++;
+    }
+    else if (player2.hasWon)
+    {
+        player2.score++;
+    }
 }
 
-function sendInfo(data, identifier)
-{
-/* Function for sending data to other computers.
-   @Params - data: Object containing all the data you want to send
-           - identifier: used to determine what data you sent
- */
-  // Send that object to the socket with unique identifier.
-  socket.emit(identifier, data);
+function tie() {
+    background('black');
+    fill('white');
+    textSize(30);
+    textAlign(CENTER, CENTER);
+    text('Tie!', widthCanvas/2, heightCanvas/2);
 }
+
+
