@@ -11,12 +11,45 @@ let path = [];
 let current_drawing_in = null;
 
 // Keep track of our socket connection. gameOver variable for convenience, gameMode for which scene the user is on.
-let socket, widthCanvas, heightCanvas, midX, midY, music, gif, settings_icon, back_arrow;
+let widthCanvas, heightCanvas, midX, midY, music, gif, settings_icon, back_arrow;
 let slider = null;
 let current_player_id = null;
 let player1 = new Player(null, 'circle');
 let player2 = new Player(null, 'cross');
 let player_us = null;
+let socket = null;
+let ai = false;
+
+function startSocket() {
+    // Change to heroku url after implementation
+    socket = io.connect();
+
+    console.log(`In Client = ${socket.id}`);
+
+    // When we receive an event with some identifier, the function we provide will be called.
+    socket.on('shape_draw', (data) =>
+    {
+        shapes = data['shapes'];
+    });
+
+    socket.on('player_turn', (data) => {
+        current_player_id = data['player_id'];
+    });
+
+    socket.on('game_start', (data) => {
+        gameStart = true;
+    });
+
+    socket.on('type', (data) => {
+        player_us = data['circle'] ? player1: player2;
+        player_us.identifier = socket.id;
+    });
+}
+
+function stopSocket() {
+    socket.disconnect();
+    socket = null;
+}
 
 const scenes =
 {
@@ -82,30 +115,6 @@ function setup()
     createCanvas(widthCanvas, heightCanvas);
     // colorMode(HSB, 360, 100, 100);
     background(0);
-
-    // Change to heroku url after implementation
-    socket = io.connect();
-
-    console.log(`In Client = ${socket.id}`);
-
-    // When we receive an event with some identifier, the function we provide will be called.
-    socket.on('shape_draw', (data) =>
-    {
-        shapes = data['shapes'];
-    });
-
-    socket.on('player_turn', (data) => {
-        current_player_id = data['player_id'];
-    });
-
-    socket.on('game_start', (data) => {
-        gameStart = true;
-    });
-
-    socket.on('type', (data) => {
-        player_us = data['circle'] ? player1: player2;
-        player_us.identifier = socket.id;
-    });
 }
 
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
@@ -147,11 +156,16 @@ function draw()
     }
     else if (gameMode === scenes.GAME)
     {
-        background(0, 0, 95);
+        // background(0, 0, 0);
+        if (!ai && socket === null) {
+            startSocket();
+        }
+        if (checkWinner()) {
+            return;
+        }
         drawBoard();
         drawingUserShape();
         drawingFinalShapes();
-        checkWinner();
         prevScreen = scenes.GAME;
     }
     else if (gameMode === scenes.SETTINGS)
@@ -171,8 +185,13 @@ function draw()
     // rect(0, 0, 50, 50);
     image(back_arrow, 5, 5, 70, 52.5);
     noFill();
-    // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
-    //checkWinner()
+
+    if (ai) {
+        gameStart = true;
+    }
+    if ((ai || gameStart !== scenes.GAME) && socket !== null) {
+        stopSocket();
+    }
 }
 
 /* TO-DO:
@@ -180,11 +199,11 @@ function draw()
       - Draw an ellipse (make the color a variable so we can change it later) using mouseX and mouseY.
       - Check to see if it's the user's turn (using player1.isTurn or player2.isTurn) before accepting mouseDragged() input, i.e.,
             don't do anything further if it's not their turn
-      - Store mouseX & mouseY values in "path" array (example.js:240) and send them to analyzeShape() for shape analysis.
+      - Store mouseX & mouseY values in 'path' array (example.js:240) and send them to analyzeShape() for shape analysis.
       - Make sure to also send mouseX and mouseY to sendInfo() so the other player can see (Unless it's an AI).
       - Receive value from analyzeShape() and remove tic-tac-toe index (refer above) from player's winConditions array using updateCondition() and the board array.
       - If the shape isn't recognized, clear the area where they drew on (maybe use the path coordinates to draw over them?)
-      - Call checkGameCondition() to see if there's a winner or the game is still being played. The scene in "scenes.js" will handle win & tie results.
+      - Call checkGameCondition() to see if there's a winner or the game is still being played. The scene in 'scenes.js' will handle win & tie results.
  */
 function mouseDragged()
 {
@@ -244,7 +263,7 @@ function drawingFinalShapes()
 function drawBoard()
 {
     // draws the board
-    stroke('black');
+    stroke('white');
     strokeWeight(4);
 
     // let c = Math.round((widthCanvas + heightCanvas) / (2*9));
@@ -324,7 +343,7 @@ function mousePressed()
 
 function mouseClicked()
 {
-    console.log(mouseX, mouseY)
+    console.log(mouseX, mouseY);
     // title page buttons clicked
     // if multiplayer clicked
     if (gameMode === scenes.TITLE)
@@ -335,6 +354,7 @@ function mouseClicked()
             mouseY <= heightCanvas/2 + 25)
         {
             console.log('waiting')
+            ai = false;
             gameMode = scenes.WAITING;
         }
         //if singleplayer clicked
@@ -343,19 +363,48 @@ function mouseClicked()
                 mouseY>= heightCanvas/2 - 25 && 
                 mouseY <= heightCanvas/2 + 25)
         {
-            console.log("game");
+            console.log('game');
+            ai = true;
             gameMode = scenes.GAME;
         }
 
         // settings button
         
     }
-    if (mouseX >= widthCanvas - 50 &&
+    else if (gameMode === scenes.GAME && ai)
+    {
+        //if continue playing AI clicked
+        if (mouseX >= widthCanvas/2 - (50 + 125) && 
+            mouseX <= widthCanvas/2 - 50 && 
+            mouseY >= heightCanvas/2 - 25 && 
+            mouseY <= heightCanvas/2 + 25)
+        {
+            console.log('Keep playing Computer.')
+            ai = true;
+            gameMode = scenes.GAME;
+            shapes = {circle: [], line: []};
+        }
+        //if home clicked
+        else if (mouseX >= widthCanvas/2 + (125 - 50) && 
+                mouseX <= widthCanvas/2 + (250 - 50) && 
+                mouseY>= heightCanvas/2 - 25 && 
+                mouseY <= heightCanvas/2 + 25)
+        {
+            console.log('home');
+            ai = false;
+            gameMode = scenes.TITLE;
+            shapes = {circle: [], line: []};
+        }
+
+        // settings button
+        
+    }
+    else if (mouseX >= widthCanvas - 50 &&
         mouseX <= widthCanvas &&
         mouseY >= 0 &&
         mouseY <= 50)
     {
-        console.log("settings");
+        console.log('settings');
         gameMode = scenes.SETTINGS;
         slider = createSlider(0, 1, 1, 0.01);
         slider.position(widthCanvas/2 - 60, heightCanvas/2);
@@ -390,7 +439,7 @@ function mouseReleased()
 
         //adds points to permanent shape line array if line detected
         if (!(shapes['line'].concat(shapes['circle']).includes(current_drawing_in))) {
-            if (current_player_id === socket.id)
+            if (ai || current_player_id === socket.id)
             {
                 if (resultLine['accuracy'] > 0.7) {
                     if (player_us.type === 'cross') {
@@ -401,7 +450,7 @@ function mouseReleased()
                         return;
                     }
                 } else if (resultCircle['accuracy'] > 0.5) {
-                    if (player_us.type === 'circle') {
+                    if (ai || player_us.type === 'circle') {
                         console.log(`Circle detected. Currently drawing in: ${current_drawing_in}`);
                         shapes['circle'].push(current_drawing_in);
                     } else {
@@ -420,10 +469,14 @@ function mouseReleased()
             console.log('Square taken');
             return;
         }
-        socket.emit('shape_draw', 
-        {
-            'shapes': shapes
-        });
+        if (!ai) {
+            socket.emit('shape_draw', 
+            {
+                'shapes': shapes
+            });
+        } else {
+            randomAI(shapes['line'].concat(shapes['circle']), shapes);
+        }
     }
     
 }
@@ -436,27 +489,35 @@ function checkWinner()
         {
             console.log(`circle has won with ${winCondition}`);
             player1.hasWon = true;
+            player2.hasWon = false;
             gameOver();
+            return true;
         }
         else if (winCondition.every(element => shapes['line'].includes(element)))
         {
             console.log(`line has won with ${winCondition}`);
             player2.hasWon = true;
+            player1.hasWon = false;
             gameOver();
+            return true;
         }
         else if ([0, 1, 2, 3, 4, 5, 6, 7, 8].every(element => shapes['line'].concat(shapes['circle']).includes(element)))
         {
             tie();
+            return true;
         }
     }
+    return false;
 }
 
 function gameOver() {
     background('black');
     fill('white');
     textSize(30);
+    stroke(0);
     textAlign(CENTER, CENTER);
-    text(`Game Over! ${player1.hasWon ? 'Player 1': 'Player 2'} has won.`, widthCanvas/2, heightCanvas/2);
+
+    text(`Game Over! ${player1.hasWon ? 'Player 1': (ai ? 'AI': 'Player 2')} has won.`, widthCanvas/2, heightCanvas/2 - 200);
     if (player1.hasWon)
     {
         player1.score++;
@@ -465,14 +526,35 @@ function gameOver() {
     {
         player2.score++;
     }
+    if (ai) {
+        fill(color(0, 0, 0));
+        rect(widthCanvas/2 - (50 + 125), heightCanvas/2 - 25, 125, 50);
+        rect(widthCanvas/2 + (125 - 50), heightCanvas/2 - 25, 125, 50);
+        noFill();
+        fill(color(0, 255, 0));
+        textSize(20);
+        text('Play Computer Again!', widthCanvas/2 - ((125 / 2) + 50), heightCanvas/2);
+        text('Go Back to Home!', widthCanvas/2 + ((125 / 2) + 75), heightCanvas/2);
+        noFill();
+    }
 }
 
 function tie() {
     background('black');
     fill('white');
+    stroke(0);
     textSize(30);
     textAlign(CENTER, CENTER);
-    text('Tie!', widthCanvas/2, heightCanvas/2);
+    text('Tie!', widthCanvas/2, heightCanvas/2 - 200);
+    if (ai) {
+        fill(color(0, 0, 0));
+        rect(widthCanvas/2 - (50 + 125), heightCanvas/2 - 25, 125, 50);
+        rect(widthCanvas/2 + (125 - 50), heightCanvas/2 - 25, 125, 50);
+        noFill();
+        fill(color(0, 255, 0));
+        textSize(20);
+        text('Play Computer Again!', widthCanvas/2 - ((125 / 2) + 50), heightCanvas/2);
+        text('Go Back to Home!', widthCanvas/2 + ((125 / 2) + 75), heightCanvas/2);
+        noFill();
+    }
 }
-
-
