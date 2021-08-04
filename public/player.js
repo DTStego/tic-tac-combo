@@ -1,4 +1,3 @@
-
 class Player {
     constructor(identifier, type) {
         // Check to see if it's the player's turn. When instantiating player objects, use random to make one of the player's "isTurn" variable true.

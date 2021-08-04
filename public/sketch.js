@@ -11,12 +11,24 @@ let path = [];
 let current_drawing_in = null;
 
 // Keep track of our socket connection. gameOver variable for convenience, gameMode for which scene the user is on.
-let socket, widthCanvas, heightCanvas, midX, midY;
+let socket, widthCanvas, heightCanvas, midX, midY, music, gif, settings_icon, back_arrow;
+let slider = null;
 let current_player_id = null;
-let gameMode = scenes.TITLE;
 let player1 = new Player(null, 'circle');
 let player2 = new Player(null, 'cross');
 let player_us = null;
+
+const scenes =
+{
+    TITLE: 'title',   
+    WAITING: 'waitingRoom',
+    AI_DIFFICULTY: 'aiDifficulty',
+    GAME: 'game',
+    SETTINGS: 'settings',
+}
+
+let gameMode = scenes.TITLE;
+let prevScreen = gameMode;
 
 let gameStart = false;
 
@@ -51,12 +63,16 @@ let winConditions =
 
 function preload()
 {
-    gif = loadImage('https://www.google.com/url?sa=i&url=https%3A%2F%2Fgiphy.com%2Fexplore%2Finfinite-zoom&psig=AOvVaw2_MV6qXI2CV6iOLsnvJnEP&ust=1628124759883000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCPit_cGTlvICFQAAAAAdAAAAABAI');  // Loads the gif image. Use with gif_var.play() and gif_var.pause()
-    music = loadSound('');
+    gif = loadImage('gif1.gif');  // Loads the gif image. Use with gif_var.play() and gif_var.pause()
+    music = loadSound('music1.mp3');
+    settings_icon = loadImage('settings_icon.png');
+    back_arrow = loadImage('back_arrow.png');
 }
 
 function setup()
 {
+    userStartAudio();
+
     // Make this variable based on screen size while centering tic-tac-toe game.
     widthCanvas = 800;
     heightCanvas = 800;
@@ -64,7 +80,7 @@ function setup()
     midY = heightCanvas / 2;
     // the reason why it is divided by three is so that the middle square is in the middle as the board is a odd number
     createCanvas(widthCanvas, heightCanvas);
-    colorMode(HSB, 360, 100, 100);
+    // colorMode(HSB, 360, 100, 100);
     background(0);
 
     // Change to heroku url after implementation
@@ -95,17 +111,39 @@ function setup()
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
 function draw()
 {
+    if (!music.isPlaying()) {
+        music.play();
+    }
+    if (gameMode !== scenes.SETTINGS && slider !== null) {
+        slider.remove();
+        slider = null;
+    }
+    background(gif);
+    textAlign(CENTER, CENTER);
     if (gameMode === scenes.TITLE)
     {
-        drawTitle();
+        textSize(40);
+        fill('white');
+        text('Tic-Tac-Toe Home', widthCanvas/2, 40);
+        noFill();
+        fill(color(0, 0, 0));
+        rect(widthCanvas/2 - (50 + 125), heightCanvas/2 - 25, 125, 50);
+        rect(widthCanvas/2 + (125 - 50), heightCanvas/2 - 25, 125, 50);
+        noFill();
+        fill(color(0, 255, 0));
+        textSize(20);
+        text('Multiplayer!', widthCanvas/2 - ((125 / 2) + 50), heightCanvas/2);
+        text('Computer!', widthCanvas/2 + ((125 / 2) + 75), heightCanvas/2);
+        noFill();
+        prevScreen = scenes.TITLE;
     }
     else if (gameMode === scenes.WAITING)
     {
-        
+        prevScreen = scenes.WAITING;
     }
     else if (gameMode === scenes.AI_DIFFICULTY)
     {
-        
+        prevScreen = scenes.AI_DIFFICULTY;
     }
     else if (gameMode === scenes.GAME)
     {
@@ -114,12 +152,25 @@ function draw()
         drawingUserShape();
         drawingFinalShapes();
         checkWinner();
+        prevScreen = scenes.GAME;
     }
     else if (gameMode === scenes.SETTINGS)
     {
-
+        music.setVolume(slider.value());
+        textSize(40);
+        fill('white');
+        text('Settings', widthCanvas/2, 40);
+        textSize(20);
+        text('Volume Level', widthCanvas/2, heightCanvas/2 - 30);
+        noFill();
     }
+    fill('white');
+    image(settings_icon, widthCanvas - 50, 0, 50, 50);
     
+    // go back function
+    // rect(0, 0, 50, 50);
+    image(back_arrow, 5, 5, 70, 52.5);
+    noFill();
     // Have if statements to check which scene the gameMode is pointing to, i.e., if (gameMode == scenes.TITLE) { title() }
     //checkWinner()
 }
@@ -190,6 +241,24 @@ function drawingFinalShapes()
     }
 }
 
+function drawBoard()
+{
+    // draws the board
+    stroke('black');
+    strokeWeight(4);
+
+    // let c = Math.round((widthCanvas + heightCanvas) / (2*9));
+    let c = 132;
+
+    // vertical lines;
+    line(midX - c, midY - 3 * c, midX - c, midY + 3 * c);
+    line(midX + c, midY - 3 * c, midX + c, midY + 3 * c);
+        
+    // horizontal lines
+    line(midX - 3 * c, midY - c, midX + 3 * c, midY - c);
+    line(midX - 3 * c, midY + c, midX + 3 * c, midY + c);
+}
+
 // When mouse clicked on a certain square, sets array to that square
 function mousePressed()
 {
@@ -246,6 +315,58 @@ function mousePressed()
                 current_drawing_in = 8;
         }
         }
+    }
+    else (gameMode === scenes.TITLE)
+    {
+       
+    }
+}
+
+function mouseClicked()
+{
+    console.log(mouseX, mouseY)
+    // title page buttons clicked
+    // if multiplayer clicked
+    if (gameMode === scenes.TITLE)
+    {
+        if (mouseX >= widthCanvas/2 - (50 + 125) && 
+            mouseX <= widthCanvas/2 - 50 && 
+            mouseY >= heightCanvas/2 - 25 && 
+            mouseY <= heightCanvas/2 + 25)
+        {
+            console.log('waiting')
+            gameMode = scenes.WAITING;
+        }
+        //if singleplayer clicked
+        else if (mouseX >= widthCanvas/2 + (125 - 50) && 
+                mouseX <= widthCanvas/2 + (250 - 50) && 
+                mouseY>= heightCanvas/2 - 25 && 
+                mouseY <= heightCanvas/2 + 25)
+        {
+            console.log("game");
+            gameMode = scenes.GAME;
+        }
+
+        // settings button
+        
+    }
+    if (mouseX >= widthCanvas - 50 &&
+        mouseX <= widthCanvas &&
+        mouseY >= 0 &&
+        mouseY <= 50)
+    {
+        console.log("settings");
+        gameMode = scenes.SETTINGS;
+        slider = createSlider(0, 1, 1, 0.01);
+        slider.position(widthCanvas/2 - 60, heightCanvas/2);
+    }
+
+    if (mouseX >= 0 &&
+        mouseX <= 50 &&
+        mouseY >= 0 &&
+        mouseY <= 50)
+    {
+        gameMode = prevScreen;
     }
 }
 
