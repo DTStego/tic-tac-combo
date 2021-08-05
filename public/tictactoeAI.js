@@ -8,7 +8,6 @@ function randomAI(squaresTaken, shapesArray) {
     if (difference.length === 0) {
         return;
     }
-    console.log(difference);
     shapesArray['line'].push(rand(difference));
     return rand(difference);
 }
