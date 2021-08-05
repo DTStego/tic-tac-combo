@@ -19,9 +19,19 @@ let player2 = new Player(null, 'cross');
 let player_us = null;
 let socket = null;
 let ai = false;
-let volume = 1;
-
 let gameStart = false;
+
+// Saves the volume for the next page load
+let volume = localStorage.getItem("volume");
+if (volume === null)
+{
+    localStorage.setItem("volume", 1);
+    volume = 1;
+}
+else
+{
+    volume = parseFloat(volume);
+}
 
 function startSocket() {
     socket = io.connect();
@@ -118,6 +128,7 @@ function setup()
     background(0);
 
     canvas.position((window.innerWidth - widthCanvas) / 2, 0);
+    music.setVolume(volume);
 }
 
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
@@ -130,7 +141,14 @@ function draw()
         slider.remove();
         slider = null;
     }
-    background(gif);
+    if (gameMode !== scenes.GAME)
+    {
+        background(gif);
+    }
+    else
+    {
+        background(0);
+    }
     textAlign(CENTER, CENTER);
     if (gameMode === scenes.TITLE)
     {
@@ -140,8 +158,8 @@ function draw()
         text('Tic-Tac-Toe Home', widthCanvas/2, 40);
         noFill();
         fill(color(0, 0, 0));
-        rect(widthCanvas/2 - (50 + 125), heightCanvas/2 - 25, 125, 50);
-        rect(widthCanvas/2 + (125 - 50), heightCanvas/2 - 25, 125, 50);
+        rect(widthCanvas/2 - (50 + 125), heightCanvas/2 - 25, 125, 50, 15);
+        rect(widthCanvas/2 + (125 - 50), heightCanvas/2 - 25, 125, 50, 15);
         noFill();
         fill(color(0, 255, 0));
         textSize(20);
@@ -186,6 +204,7 @@ function draw()
         stroke(0);
         music.setVolume(slider.value());
         volume = slider.value();
+        localStorage.setItem("volume", volume);
         textSize(40);
         fill('white');
         text('Settings', widthCanvas/2, 40);
@@ -214,28 +233,20 @@ function draw()
     image(back_arrow, 5, 5, 70, 52.5);
     noFill();
 
-    if (ai)
+    if (ai && gameMode === scenes.GAME)
     {
         gameStart = true;
+        player_us = player1;
     }
     if ((ai || (gameMode !== scenes.GAME && gameMode !== scenes.WAITING)) && socket !== null)
     {
+        console.log(1)
         stopSocket();
-        socket = null;
     }
+
+    document.body.style.backgroundColor = (gameMode === scenes.GAME) ? '#000000': '#080600';
 }
 
-/* TO-DO:
-      - Only works if gameOver is false and the scene is either scenes.SINGLEPLAYER or scenes.MULTIPLAYER.
-      - Draw an ellipse (make the color a variable so we can change it later) using mouseX and mouseY.
-      - Check to see if it's the user's turn (using player1.isTurn or player2.isTurn) before accepting mouseDragged() input, i.e.,
-            don't do anything further if it's not their turn
-      - Store mouseX & mouseY values in 'path' array (example.js:240) and send them to analyzeShape() for shape analysis.
-      - Make sure to also send mouseX and mouseY to sendInfo() so the other player can see (Unless it's an AI).
-      - Receive value from analyzeShape() and remove tic-tac-toe index (refer above) from player's winConditions array using updateCondition() and the board array.
-      - If the shape isn't recognized, clear the area where they drew on (maybe use the path coordinates to draw over them?)
-      - Call checkGameCondition() to see if there's a winner or the game is still being played. The scene in 'scenes.js' will handle win & tie results.
- */
 function mouseDragged()
 {
     if (gameMode === scenes.GAME)
@@ -432,10 +443,14 @@ function mouseClicked()
         mouseY >= 0 &&
         mouseY <= 50)
     {
-        prevScreen = gameMode;
-        gameMode = scenes.SETTINGS;
-        slider = createSlider(0, 1, volume, 0.01);
-        slider.position((widthCanvas/2 + (window.innerWidth - widthCanvas) / 2) - 60, heightCanvas/2);
+        if (gameMode !== scenes.SETTINGS)
+        {
+            prevScreen = gameMode;
+            gameMode = scenes.SETTINGS;
+            slider = createSlider(0, 1, volume, 0.01);
+            slider.position((widthCanvas/2 + (window.innerWidth - widthCanvas) / 2) - 60, heightCanvas/2);
+            slider.style('width', `${widthCanvas / 5}px`);
+        }
     }
 
     if (mouseX >= 0 &&
@@ -469,7 +484,7 @@ function mouseReleased()
                     if (player_us.type === 'cross')
                     {
                         M.toast({
-                            html: `<span>A Cross Has Been Detected in Square ${current_drawing_in}</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>`,
+                            html: `<span class="noselect">A Cross Has Been Detected in Square ${current_drawing_in}</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>`,
                             classes: 'rounded'
                         })
                         // console.log(`Line detected. Currently drawing in: ${current_drawing_in}`);
@@ -478,7 +493,7 @@ function mouseReleased()
                     else
                     {
                         M.toast({
-                            html: '<span>You cannot draw crosses. You are allowed to draw circles.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
+                            html: '<span class="noselect">You cannot draw crosses. You are allowed to draw circles.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
                             classes: 'rounded'
                         })
                         // console.log('You cannot draw crosses. You are allowed to draw circles.');
@@ -490,7 +505,7 @@ function mouseReleased()
                     if (ai || player_us.type === 'circle')
                     {
                         M.toast({
-                            html: `<span>A Circle Has Been Detected in Square ${current_drawing_in}</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>`,
+                            html: `<span class="noselect">A Circle Has Been Detected in Square ${current_drawing_in}</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>`,
                             classes: 'rounded'
                         })
                         // console.log(`Circle detected. Currently drawing in: ${current_drawing_in}`);
@@ -499,7 +514,7 @@ function mouseReleased()
                     else
                     {
                         M.toast({
-                            html: '<span>You cannot draw circles. You are allowed to draw crosses.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
+                            html: '<span class="noselect">You cannot draw circles. You are allowed to draw crosses.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
                             classes: 'rounded'
                         })
                         // console.log('You cannot draw circles. You are allowed to draw crosses.');
@@ -509,7 +524,7 @@ function mouseReleased()
                 else
                 {
                     M.toast({
-                        html: '<span>The shape could not be recognized.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
+                        html: '<span class="noselect">The shape could not be recognized.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
                         classes: 'rounded'
                     })
                     // console.log('The shape could not be recognized');
@@ -517,7 +532,7 @@ function mouseReleased()
                 }
             } else {
                 M.toast({
-                    html: '<span>It is not your turn. Please wait for your opponent for move.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
+                    html: '<span class="noselect">It is not your turn. Please wait for your opponent for move.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
                     classes: 'rounded'
                 })
                 // console.log('Not Your Turn');
@@ -525,7 +540,7 @@ function mouseReleased()
             }
         } else {
             M.toast({
-                html: '<span>That square has been taken. Please choose another one.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
+                html: '<span class="noselect">That square has been taken. Please choose another one.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
                 classes: 'rounded'
             })
             // console.log('Square taken');
@@ -567,11 +582,9 @@ function checkWinner()
     return false;
 }
 
-function gameOver() {
+function gameOver()
+{
     gameMode = scenes.GAMEOVER;
-    if (socket !== null) {
-        stopSocket();
-    }
     background(gif);
     fill('white');
     textSize(30);
@@ -590,34 +603,32 @@ function gameOver() {
     if (ai)
     {
         fill(color(0, 0, 0));
-        rect(widthCanvas/2 - (50 + 200), heightCanvas/2 - 25, 200, 50);
-        rect(widthCanvas/2 + 50, heightCanvas/2 - 25, 200, 50);
+        rect(widthCanvas/2 - (50 + 220), heightCanvas/2 - 25, 220, 50, 15);
+        rect(widthCanvas/2 + 50, heightCanvas/2 - 25, 220, 50, 15);
         noFill();
         fill(color(0, 255, 0));
         textSize(20);
-        text('Play Computer Again!', widthCanvas/2 - ((200 / 2) + 50), heightCanvas/2);
-        text('Go Back to Home!', widthCanvas/2 + ((200 / 2) + 50), heightCanvas/2);
+        text('Play Computer Again!', widthCanvas/2 - ((220 / 2) + 50), heightCanvas/2);
+        text('Go Back to Home!', widthCanvas/2 + ((220 / 2) + 50), heightCanvas/2);
         noFill();
     }
     else if (!ai)
     {
         fill(color(0, 0, 0));
-        rect(widthCanvas/2 - (50 + 200), heightCanvas/2 - 25, 200, 50);
-        rect(widthCanvas/2 + 50, heightCanvas/2 - 25, 200, 50);
+        rect(widthCanvas/2 - (50 + 220), heightCanvas/2 - 25, 220, 50, 15);
+        rect(widthCanvas/2 + 50, heightCanvas/2 - 25, 220, 50, 15);
         noFill();
         fill(color(0, 255, 0));
         textSize(20);
-        text('Play Multiplayer Again!', widthCanvas/2 - ((200 / 2) + 50), heightCanvas/2);
-        text('Go Back to Home!', widthCanvas/2 + ((200 / 2) + 50), heightCanvas/2);
+        text('Play Multiplayer Again!', widthCanvas/2 - ((220 / 2) + 50), heightCanvas/2);
+        text('Go Back to Home!', widthCanvas/2 + ((220 / 2) + 50), heightCanvas/2);
         noFill();
     }
 }
 
-function tie() {
+function tie()
+{
     gameMode = scenes.GAMEOVER;
-    if (socket !== null) {
-        stopSocket();
-    }
     background(gif);
     fill('white');
     stroke(0);
@@ -626,25 +637,25 @@ function tie() {
     text('Tie!', widthCanvas/2, heightCanvas/2 - 200);
     if (ai) {
         fill(color(0, 0, 0));
-        rect(widthCanvas/2 - (50 + 200), heightCanvas/2 - 25, 200, 50);
-        rect(widthCanvas/2 + 50, heightCanvas/2 - 25, 200, 50);
+        rect(widthCanvas/2 - (50 + 220), heightCanvas/2 - 25, 220, 50, 15);
+        rect(widthCanvas/2 + 50, heightCanvas/2 - 25, 220, 50, 15);
         noFill();
         fill(color(0, 255, 0));
         textSize(20);
-        text('Play Computer Again!', widthCanvas/2 - ((200 / 2) + 50), heightCanvas/2);
-        text('Go Back to Home!', widthCanvas/2 + ((200 / 2) + 50), heightCanvas/2);
+        text('Play Computer Again!', widthCanvas/2 - ((220 / 2) + 50), heightCanvas/2);
+        text('Go Back to Home!', widthCanvas/2 + ((220 / 2) + 50), heightCanvas/2);
         noFill();
     }
     else if (!ai)
     {
         fill(color(0, 0, 0));
-        rect(widthCanvas/2 - (50 + 200), heightCanvas/2 - 25, 200, 50);
-        rect(widthCanvas/2 + 50, heightCanvas/2 - 25, 200, 50);
+        rect(widthCanvas/2 - (50 + 220), heightCanvas/2 - 25, 220, 50, 15);
+        rect(widthCanvas/2 + 50, heightCanvas/2 - 25, 220, 50, 15);
         noFill();
         fill(color(0, 255, 0));
         textSize(20);
-        text('Play Multiplayer Again!', widthCanvas/2 - ((200 / 2) + 50), heightCanvas/2);
-        text('Go Back to Home!', widthCanvas/2 + ((200 / 2) + 50), heightCanvas/2);
+        text('Play Multiplayer Again!', widthCanvas/2 - ((220 / 2) + 50), heightCanvas/2);
+        text('Go Back to Home!', widthCanvas/2 + ((220 / 2) + 50), heightCanvas/2);
         noFill();
     }
 }
