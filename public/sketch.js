@@ -34,7 +34,7 @@ else
 }
 
 function startSocket() {
-    socket = io.connect();
+    socket = io.connect('https://tic-tac-combo.herokuapp.com/');
 
     console.log(`In Client = ${socket.id}`);
 
@@ -53,7 +53,7 @@ function startSocket() {
     });
 
     socket.on('type', (data) => {
-        player_us = data['circle'] ? player1: player2;
+        player_us = data['circle'] ? player1 : player2;
         player_us.identifier = socket.id;
     });
 }
