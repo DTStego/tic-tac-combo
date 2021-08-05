@@ -140,11 +140,13 @@ function draw()
 
     if (gameMode === scenes.GAME || gameMode === scenes.GAMEOVER)
     {
-        music = loadSound('music2.mp3');
+        if (music !== loadSound('music2.mp3'))
+            music = loadSound('music2.mp3');
     }
     else
     {
-        music = loadSound('music1.mp3');
+        if (music !== loadSound('music1.mp3'))
+            music = loadSound('music1.mp3');
     }
 
     if (gameMode !== scenes.SETTINGS && slider !== null) {
