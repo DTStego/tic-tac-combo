@@ -468,12 +468,20 @@ function mouseReleased()
                 {
                     if (player_us.type === 'cross')
                     {
-                        console.log(`Line detected. Currently drawing in: ${current_drawing_in}`);
+                        M.toast({
+                            html: `<span>A Cross Has Been Detected in Square ${current_drawing_in}</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>`,
+                            classes: 'rounded'
+                        })
+                        // console.log(`Line detected. Currently drawing in: ${current_drawing_in}`);
                         shapes['line'].push(current_drawing_in);
                     }
                     else
                     {
-                        console.log('You cannot draw crosses. You are allowed to draw circles.');
+                        M.toast({
+                            html: '<span>You cannot draw crosses. You are allowed to draw circles.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
+                            classes: 'rounded'
+                        })
+                        // console.log('You cannot draw crosses. You are allowed to draw circles.');
                         return;
                     }
                 }
@@ -481,26 +489,46 @@ function mouseReleased()
                 {
                     if (ai || player_us.type === 'circle')
                     {
-                        console.log(`Circle detected. Currently drawing in: ${current_drawing_in}`);
+                        M.toast({
+                            html: `<span>A Circle Has Been Detected in Square ${current_drawing_in}</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>`,
+                            classes: 'rounded'
+                        })
+                        // console.log(`Circle detected. Currently drawing in: ${current_drawing_in}`);
                         shapes['circle'].push(current_drawing_in);
                     }
                     else
                     {
-                        console.log('You cannot draw circles. You are allowed to draw crosses.');
+                        M.toast({
+                            html: '<span>You cannot draw circles. You are allowed to draw crosses.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
+                            classes: 'rounded'
+                        })
+                        // console.log('You cannot draw circles. You are allowed to draw crosses.');
                         return;
                     }                
                 }
                 else
                 {
-                    console.log('The shape could not be recognized');
+                    M.toast({
+                        html: '<span>The shape could not be recognized.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
+                        classes: 'rounded'
+                    })
+                    // console.log('The shape could not be recognized');
                     return;
                 }
             } else {
-                console.log('Not Your Turn');
+                M.toast({
+                    html: '<span>It is not your turn. Please wait for your opponent for move.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
+                    classes: 'rounded'
+                })
+                // console.log('Not Your Turn');
                 return;
             }
         } else {
-            console.log('Square taken');
+            M.toast({
+                html: '<span>That square has been taken. Please choose another one.</span><button class="btn-flat toast-action" style="color: white;" onclick="M.Toast.dismissAll();">X</button>',
+                classes: 'rounded'
+            })
+            // console.log('Square taken');
             return;
         }
         if (!ai) {
