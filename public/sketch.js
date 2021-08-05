@@ -11,7 +11,7 @@ let path = [];
 let current_drawing_in = null;
 
 // Keep track of our socket connection. gameOver variable for convenience, gameMode for which scene the user is on.
-let canvas, widthCanvas, heightCanvas, midX, midY, music, gif, settings_icon, back_arrow;
+let canvas, widthCanvas, heightCanvas, midX, midY, music, music2, gif, settings_icon, back_arrow;
 let slider = null;
 let current_player_id = null;
 let player1 = new Player(null, 'circle');
@@ -64,33 +64,32 @@ function stopSocket() {
 }
 
 const scenes =
-{
-    TITLE: 'title',   
-    WAITING: 'waitingRoom',
-    AI_DIFFICULTY: 'aiDifficulty',
-    GAME: 'game',
-    SETTINGS: 'settings',
-    GAMEOVER: 'gameover',
-}
+    {
+        TITLE: 'title',
+        WAITING: 'waitingRoom',
+        AI_DIFFICULTY: 'aiDifficulty',
+        GAME: 'game',
+        SETTINGS: 'settings',
+        GAMEOVER: 'gameover',
+    }
 
 let gameMode = scenes.TITLE;
 let prevScreen = gameMode;
 
 let winConditions =
-[
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-];
+    [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
 
 // Reminder to keep with current conventions, i.e., please use brackets on the next line instead of the same line (Because it's cooler).
 /* Tic-tac-toe array positions
-
             |     |
          0  |  1  |  2
        _____|_____|_____
@@ -109,6 +108,7 @@ function preload()
 {
     gif = loadImage('gif1.gif');  // Loads the gif image. Use with gif_var.play() and gif_var.pause()
     music = loadSound('music1.mp3');
+    music2 = loadSound('music2.mp3');
     settings_icon = loadImage('settings_icon.png');
     back_arrow = loadImage('back_arrow.png');
 }
@@ -129,31 +129,30 @@ function setup()
 
     canvas.position((window.innerWidth - widthCanvas) / 2, 0);
     music.setVolume(volume);
+    music2.setVolume(volume)
 }
 
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
 function draw()
 {
-    if (!music.isPlaying()) {
+    if (!music.isPlaying() && !music2.isPlaying()) {
         music.play();
     }
 
-    if (gameMode === scenes.GAME || gameMode === scenes.GAMEOVER)
+    if (gameMode === scenes.GAME && !music2.isPlaying())
     {
-        if (music !== loadSound('music2.mp3'))
-            music = loadSound('music2.mp3');
+        music.stop();
+        music2.play();
     }
-    else
+    else if (gameMode === scenes.TITLE && !music.isPlaying())
     {
-        if (music !== loadSound('music1.mp3'))
-            music = loadSound('music1.mp3');
+        music2.stop();
     }
 
     if (gameMode !== scenes.SETTINGS && slider !== null) {
         slider.remove();
         slider = null;
     }
-
     if (gameMode !== scenes.GAME)
     {
         background(gif);
@@ -162,7 +161,6 @@ function draw()
     {
         background(0);
     }
-
     textAlign(CENTER, CENTER);
     if (gameMode === scenes.TITLE)
     {
@@ -229,7 +227,7 @@ function draw()
     else if (gameMode === scenes.GAMEOVER)
     {
         gameStart = false;
-        if (checkWinner()[1] === 'tie') 
+        if (checkWinner()[1] === 'tie')
         {
             tie();
         }
@@ -239,11 +237,9 @@ function draw()
         }
     }
 
-
-   
     fill('white');
     image(settings_icon, widthCanvas - 50, 0, 50, 50);
-    
+
     // go back function
     // rect(0, 0, 50, 50);
     image(back_arrow, 5, 5, 70, 52.5);
@@ -289,7 +285,7 @@ function drawingFinalShapes()
             ((heightCanvas / 3) / 2) + ((heightCanvas / 3) * Math.floor(circle / 3)),  // y coordinate of center
             widthCanvas / 3 - 10, heightCanvas / 3 - 10
         )
-        
+
     }
     for (let line_coords of shapes['line'])
     {
@@ -326,7 +322,7 @@ function drawBoard()
     // vertical lines;
     line(midX - c, midY - 3 * c, midX - c, midY + 3 * c);
     line(midX + c, midY - 3 * c, midX + c, midY + 3 * c);
-        
+
     // horizontal lines
     line(midX - 3 * c, midY - c, midX + 3 * c, midY - c);
     line(midX - 3 * c, midY + c, midX + 3 * c, midY + c);
@@ -392,9 +388,9 @@ function mouseClicked()
     // if multiplayer clicked
     if (gameMode === scenes.TITLE)
     {
-        if (mouseX >= widthCanvas/2 - (50 + 125) && 
-            mouseX <= widthCanvas/2 - 50 && 
-            mouseY >= heightCanvas/2 - 25 && 
+        if (mouseX >= widthCanvas/2 - (50 + 125) &&
+            mouseX <= widthCanvas/2 - 50 &&
+            mouseY >= heightCanvas/2 - 25 &&
             mouseY <= heightCanvas/2 + 25)
         {
             ai = false;
@@ -405,22 +401,22 @@ function mouseClicked()
             startSocket();
         }
         //if singleplayer clicked
-        else if (mouseX >= widthCanvas/2 + (125 - 50) && 
-                mouseX <= widthCanvas/2 + (250 - 50) && 
-                mouseY>= heightCanvas/2 - 25 && 
-                mouseY <= heightCanvas/2 + 25)
+        else if (mouseX >= widthCanvas/2 + (125 - 50) &&
+            mouseX <= widthCanvas/2 + (250 - 50) &&
+            mouseY>= heightCanvas/2 - 25 &&
+            mouseY <= heightCanvas/2 + 25)
         {
             ai = true;
             prevScreen = gameMode;
             gameMode = scenes.GAME;
-            
+
         }
     }
     else if (gameMode === scenes.GAMEOVER) {
         // If return to home clicked
-        if (mouseX >= widthCanvas/2 + (125 - 50) && 
-            mouseX <= widthCanvas/2 + (250 - 50) && 
-            mouseY>= heightCanvas/2 - 25 && 
+        if (mouseX >= widthCanvas/2 + (125 - 50) &&
+            mouseX <= widthCanvas/2 + (250 - 50) &&
+            mouseY>= heightCanvas/2 - 25 &&
             mouseY <= heightCanvas/2 + 25 &&
             socket === null)
         {
@@ -432,9 +428,9 @@ function mouseClicked()
             shapes = {circle: [], line: []};
         }
         // Other wise if play again clicked
-        else if (mouseX >= widthCanvas/2 - (50 + 125) && 
-            mouseX <= widthCanvas/2 - 50 && 
-            mouseY >= heightCanvas/2 - 25 && 
+        else if (mouseX >= widthCanvas/2 - (50 + 125) &&
+            mouseX <= widthCanvas/2 - 50 &&
+            mouseY >= heightCanvas/2 - 25 &&
             mouseY <= heightCanvas/2 + 25)
         {
             // If play against AI again clicked
@@ -535,7 +531,7 @@ function mouseReleased()
                         })
                         // console.log('You cannot draw circles. You are allowed to draw crosses.');
                         return;
-                    }                
+                    }
                 }
                 else
                 {
@@ -563,15 +559,15 @@ function mouseReleased()
             return;
         }
         if (!ai) {
-            socket.emit('shape_draw', 
-            {
-                'shapes': shapes
-            });
+            socket.emit('shape_draw',
+                {
+                    'shapes': shapes
+                });
         } else {
             randomAI(shapes['line'].concat(shapes['circle']), shapes);
         }
     }
-    
+
 }
 
 function checkWinner()
