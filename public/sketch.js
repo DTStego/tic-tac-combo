@@ -26,7 +26,7 @@ let volume = localStorage.getItem("volume");
 if (volume === null)
 {
     localStorage.setItem("volume", 1);
-    volume = 1;
+    volume = 0.5;
 }
 else
 {
