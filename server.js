@@ -24,6 +24,7 @@ io.sockets.on('connection', (socket) =>
 
         if (players.length === 2)
         {
+            console.log("Two players connected")
             io.sockets.emit('player_turn', {'player_id': players[0]});
             io.sockets.emit('game_start', {'game_start': true});
             io.to(players[0]).emit('type', {'circle': true, 'line': false});
