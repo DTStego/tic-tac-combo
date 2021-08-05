@@ -137,10 +137,21 @@ function draw()
     if (!music.isPlaying()) {
         music.play();
     }
+
+    if (gameMode === scenes.GAME || gameMode === scenes.GAMEOVER)
+    {
+        music = loadSound('music2.mp3');
+    }
+    else
+    {
+        music = loadSound('music1.mp3');
+    }
+
     if (gameMode !== scenes.SETTINGS && slider !== null) {
         slider.remove();
         slider = null;
     }
+
     if (gameMode !== scenes.GAME)
     {
         background(gif);
@@ -149,6 +160,7 @@ function draw()
     {
         background(0);
     }
+
     textAlign(CENTER, CENTER);
     if (gameMode === scenes.TITLE)
     {
@@ -224,6 +236,8 @@ function draw()
             gameOver();
         }
     }
+
+
    
     fill('white');
     image(settings_icon, widthCanvas - 50, 0, 50, 50);
