@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jimmy Nguyen, Bhavagyna Vegunta, Manvir Hansra, Austin Wong",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "drawn-shape-recognizer": "^1.1.1",
     "express": "^4.13.4",
