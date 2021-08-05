@@ -152,7 +152,6 @@ function draw()
     textAlign(CENTER, CENTER);
     if (gameMode === scenes.TITLE)
     {
-        music = loadSound('music1.mp3');
         stroke(0);
         textSize(40);
         fill('white');
