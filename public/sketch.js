@@ -149,7 +149,8 @@ function draw()
         music2.stop();
     }
 
-    if (gameMode !== scenes.SETTINGS && slider !== null) {
+    if (gameMode !== scenes.SETTINGS && slider !== null)
+    {
         slider.remove();
         slider = null;
     }
@@ -327,7 +328,8 @@ function mousePressed()
         // if functions to determine which square the mouse clicks in
         // once square identified, current_drawing_in variable set to square index
         // 3 if conditions for 3 columns, 3 rows in each if loop
-        if (0 <= mouseY && mouseY <= heightCanvas/3) {
+        if (0 <= mouseY && mouseY <= heightCanvas/3)
+        {
             if (0 <= mouseX && mouseX <= widthCanvas/3)
             {
                 current_drawing_in = 0;
@@ -341,7 +343,8 @@ function mousePressed()
                 current_drawing_in = 2;
             }
         }
-        else if (heightCanvas/3 <= mouseY && mouseY <= 2*(heightCanvas/3)) {
+        else if (heightCanvas/3 <= mouseY && mouseY <= 2*(heightCanvas/3))
+        {
             if (0 <= mouseX && mouseX <= widthCanvas/3)
             {
                 current_drawing_in = 3;
@@ -355,7 +358,8 @@ function mousePressed()
                 current_drawing_in = 5;
             }
         }
-        else if (2*(heightCanvas/3) <= mouseY && mouseY <= 3*(heightCanvas/3)) {
+        else if (2*(heightCanvas/3) <= mouseY && mouseY <= 3*(heightCanvas/3))
+        {
             if (0 <= mouseX && mouseX <= widthCanvas/3)
             {
                 current_drawing_in = 6;
