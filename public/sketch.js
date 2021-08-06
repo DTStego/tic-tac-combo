@@ -573,20 +573,20 @@ function checkWinner()
         {
             player1.hasWon = true;
             player2.hasWon = false;
-            return [true, 'gameOver'];
+            return [true, 'won'];
         }
         else if (winCondition.every(element => shapes['line'].includes(element)))
         {
             player2.hasWon = true;
             player1.hasWon = false;
-            return [true, 'gameOver'];
-        }
-        else if ([0, 1, 2, 3, 4, 5, 6, 7, 8].every(element => shapes['line'].concat(shapes['circle']).includes(element)))
-        {
-            return [true, 'tie'];
-        }
+            return [true, 'won'];
+        } 
     }
-    return false;
+    if ([0, 1, 2, 3, 4, 5, 6, 7, 8].every(element => shapes['line'].concat(shapes['circle']).includes(element)))
+    {
+        return [true, 'tie'];
+    }
+    return [false];
 }
 
 function gameOver()
