@@ -50,6 +50,7 @@ function startSocket() {
     });
 
     socket.on('game_start', (data) => {
+        console.log(1)
         gameStart = true;
     });
 
@@ -135,7 +136,8 @@ function setup()
 // Continuously draws only one of four preset modes (Title Screen, Settings Screen, etc.).
 function draw()
 {
-    if (!music.isPlaying() && !music2.isPlaying()) {
+    if (!music.isPlaying() && !music2.isPlaying())
+    {
         music.loop();
     }
 
@@ -181,6 +183,7 @@ function draw()
         noFill();
         if (gameStart)
         {
+            console.log(gameStart)
             prevScreen = gameMode;
             gameMode = scenes.GAME;
         }
@@ -216,6 +219,8 @@ function draw()
     }
     else if (gameMode === scenes.GAMEOVER)
     {
+        gameStart = false;
+        console.log(gameStart)
         if (checkWinner()[1] === 'tie')
         {
             tie();
@@ -236,15 +241,11 @@ function draw()
 
     if (ai && gameMode === scenes.GAME)
     {
-        gameStart = true;
         player_us = player1;
-    }
-    else
-    {
-        gameStart = false;
     }
     if ((ai || (gameMode !== scenes.GAME && gameMode !== scenes.WAITING)) && socket !== null)
     {
+        console.log(12)
         stopSocket();
     }
 
@@ -395,7 +396,7 @@ function mouseClicked()
             gameMode = scenes.WAITING;
             startSocket();
         }
-        //if singleplayer clicked
+        // If singleplayer clicked
         else if (mouseX >= widthCanvas/2 + (125 - 50) &&
             mouseX <= widthCanvas/2 + (250 - 50) &&
             mouseY>= heightCanvas/2 - 25 &&
@@ -404,7 +405,6 @@ function mouseClicked()
             ai = true;
             prevScreen = gameMode;
             gameMode = scenes.GAME;
-
         }
     }
     else if (gameMode === scenes.GAMEOVER) {
@@ -422,7 +422,7 @@ function mouseClicked()
             gameMode = scenes.TITLE;
             shapes = {circle: [], line: []};
         }
-        // Other wise if play again clicked
+        // Otherwise if play again clicked
         else if (mouseX >= widthCanvas/2 - (50 + 125) &&
             mouseX <= widthCanvas/2 - 50 &&
             mouseY >= heightCanvas/2 - 25 &&
