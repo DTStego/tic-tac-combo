@@ -34,7 +34,7 @@ else
 }
 
 function startSocket() {
-    // Don't need url. Automatically connectes to the server (whether that be http://localhost:300 or https://tic-tac-conbo.herokuapp.com)
+    // Don't need url. Automatically connectes to the server (whether that be http://localhost:3000 or https://tic-tac-combo.herokuapp.com)
     socket = io.connect();
 
     console.log(`In Client = ${socket.id}`);
