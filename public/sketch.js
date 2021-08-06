@@ -34,7 +34,8 @@ else
 }
 
 function startSocket() {
-    socket = io.connect('https://tic-tac-combo.herokuapp.com/');
+    // Don't need url. Automatically connectes to the server (whether that be http://localhost:300 or https://tic-tac-conbo.herokuapp.com)
+    socket = io.connect();
 
     console.log(`In Client = ${socket.id}`);
 
@@ -67,7 +68,6 @@ const scenes =
     {
         TITLE: 'title',
         WAITING: 'waitingRoom',
-        AI_DIFFICULTY: 'aiDifficulty',
         GAME: 'game',
         SETTINGS: 'settings',
         GAMEOVER: 'gameover',
@@ -136,13 +136,13 @@ function setup()
 function draw()
 {
     if (!music.isPlaying() && !music2.isPlaying()) {
-        music.play();
+        music.loop();
     }
 
     if (gameMode === scenes.GAME && !music2.isPlaying())
     {
         music.stop();
-        music2.play();
+        music2.loop();
     }
     else if (gameMode === scenes.TITLE && !music.isPlaying())
     {
@@ -153,14 +153,7 @@ function draw()
         slider.remove();
         slider = null;
     }
-    if (gameMode !== scenes.GAME)
-    {
-        background(gif);
-    }
-    else
-    {
-        background(0);
-    }
+    background(gameMode === scenes.GAME ? 0 : gif);
     textAlign(CENTER, CENTER);
     if (gameMode === scenes.TITLE)
     {
@@ -191,9 +184,6 @@ function draw()
             gameMode = scenes.GAME;
         }
     }
-    else if (gameMode === scenes.AI_DIFFICULTY)
-    {
-    }
     else if (gameMode === scenes.GAME)
     {
         if (checkWinner()[0])
@@ -201,7 +191,6 @@ function draw()
             prevScreen = gameMode;
             gameMode = scenes.GAMEOVER;
         }
-        // background(0, 0, 0);
         if (!ai && socket === null)
         {
             startSocket();
@@ -226,7 +215,6 @@ function draw()
     }
     else if (gameMode === scenes.GAMEOVER)
     {
-        gameStart = false;
         if (checkWinner()[1] === 'tie')
         {
             tie();
@@ -250,9 +238,12 @@ function draw()
         gameStart = true;
         player_us = player1;
     }
+    else
+    {
+        gameStart = false;
+    }
     if ((ai || (gameMode !== scenes.GAME && gameMode !== scenes.WAITING)) && socket !== null)
     {
-        console.log(1)
         stopSocket();
     }
 
